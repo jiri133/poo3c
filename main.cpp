@@ -61,7 +61,7 @@ class Rewards
     std :: string type;
     int value;
 public:
-    Rewards(const std :: string& type, int value = 1)
+   explicit Rewards(const std :: string& type, int value = 1)
         : type(type), value(value){}
     Rewards(const Rewards& r)
         :type(r.type),value(r.value){}
@@ -99,7 +99,7 @@ private:
     int score;
 
 public:
-    Game(const Fish& player) : player(player), score(0) {}
+    explicit Game(const Fish& player) : player(player), score(0) {}
 
     void spawnFish(int num) {
         srand(time(0));
