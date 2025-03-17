@@ -1,57 +1,152 @@
 #include <iostream>
-#include <array>
+#include <vector>
 
-#include <Helper.h>
+class Fish
+{
+    std :: string name;
+    int size;
+    int speed;
+    int growthFactor;
 
-int main() {
-    std::cout << "Hello, world!\n";
-    std::array<int, 100> v{};
-    int nr;
-    std::cout << "Introduceți nr: ";
-    /////////////////////////////////////////////////////////////////////////
-    /// Observație: dacă aveți nevoie să citiți date de intrare de la tastatură,
-    /// dați exemple de date de intrare folosind fișierul tastatura.txt
-    /// Trebuie să aveți în fișierul tastatura.txt suficiente date de intrare
-    /// (în formatul impus de voi) astfel încât execuția programului să se încheie.
-    /// De asemenea, trebuie să adăugați în acest fișier date de intrare
-    /// pentru cât mai multe ramuri de execuție.
-    /// Dorim să facem acest lucru pentru a automatiza testarea codului, fără să
-    /// mai pierdem timp de fiecare dată să introducem de la zero aceleași date de intrare.
-    ///
-    /// Pe GitHub Actions (bife), fișierul tastatura.txt este folosit
-    /// pentru a simula date introduse de la tastatură.
-    /// Bifele verifică dacă programul are erori de compilare, erori de memorie și memory leaks.
-    ///
-    /// Dacă nu puneți în tastatura.txt suficiente date de intrare, îmi rezerv dreptul să vă
-    /// testez codul cu ce date de intrare am chef și să nu pun notă dacă găsesc vreun bug.
-    /// Impun această cerință ca să învățați să faceți un demo și să arătați părțile din
-    /// program care merg (și să le evitați pe cele care nu merg).
-    ///
-    /////////////////////////////////////////////////////////////////////////
-    std::cin >> nr;
-    /////////////////////////////////////////////////////////////////////////
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "v[" << i << "] = ";
-        std::cin >> v[i];
+public:
+    Fish(const std :: string& name, int size, int speed, int growthFactor = 1)//constrde initializare
+    : name(name), size(size), speed(speed), growthFactor(growthFactor){}
+
+    Fish ( const Fish& f )//const de copiere
+    :name(f.name),size(f.size),speed(f.size),growthFactor(f.growthFactor){}
+
+    ~Fish() = default;
+
+
+    //operator=
+    Fish& operator=(const Fish& other) {
+        if (this != &other) {  // Verificăm auto-atribuierea
+            name = other.name;
+            size = other.size;
+            speed = other.speed;
+            growthFactor = other.growthFactor;
+        }
+        return *this;  // Returnăm obiectul curent
     }
-    std::cout << "\n\n";
-    std::cout << "Am citit de la tastatură " << nr << " elemente:\n";
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "- " << v[i] << "\n";
+    // verific dacă poate mânca alt pește
+    bool canEat(const Fish& other) const {
+        return this->size > other.size;
     }
-    ///////////////////////////////////////////////////////////////////////////
-    /// Pentru date citite din fișier, NU folosiți tastatura.txt. Creați-vă voi
-    /// alt fișier propriu cu ce alt nume doriți.
-    /// Exemplu:
-    /// std::ifstream fis("date.txt");
-    /// for(int i = 0; i < nr2; ++i)
-    ///     fis >> v2[i];
+    // Creste pestele dupa ce a mancat
+    void grow() {
+        size += growthFactor;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Fish& f) {
+        os << "Fish(" << f.name << ", Size: " << f.size << ", Speed: " << f.speed << ")";
+        return os;
+    }
+    void applyReward(int bonus) {
+        size += bonus;
+        speed += bonus / 2;
+        std::cout << name << " a primit un bonus! Dimensiune: " << size << ", Viteză: " << speed << std::endl;
+    }
+
+
+    // void display() const
+    // {
+    //     std :: cout << name << " " << size << " " << speed << " " << growthFactor << std :: endl;
+    // }
+
+    int getSize() const { return size; }
+    const std::string& getName() const { return name; }
+};
+class Rewards
+{
+    std :: string type;
+    int value;
+public:
+    Rewards(const std :: string& type, int value = 1)
+        : type(type), value(value){}
+    Rewards(const Rewards& r)
+        :type(r.type),value(r.value){}
+    friend std::ostream& operator<<(std::ostream& os, const Rewards& r) {
+        os << "Reward(" << r.type << ", Value: " << r.value << ")";
+        return os;
+    }
+
+
+
+
+};
+
+class Aquarium
+{
+    std :: vector <Fish> fishies;
+    std :: vector <Rewards> rewards;
+
+public:
+    void addFish(const Fish& fish) { fishies.push_back(fish); }
+    void addReward(const Rewards& reward) { rewards.push_back(reward); }
+
+    void showFish() const {
+        for (const auto& fish : fishies) {
+            std::cout << fish << std::endl;
+        }
+
+    }
+    friend class Game;
+};
+class Game {
+private:
+    Fish player;
+    Aquarium aquarium;
+    int score;
+
+public:
+    Game(const Fish& player) : player(player), score(0) {}
+
+    void spawnFish(int num) {
+        srand(time(0));
+        for (int i = 0; i < num; ++i) {
+            int randomSize = rand() % 10 + 1;//de adaugat o formula mai buna la randomizare
+            int randomSpeed = rand() % 5 + 1;
+            Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
+            aquarium.addFish(newFish);
+        }
+    }
+
+    void playTurn(const Fish& targetFish) {
+        if (player.canEat(targetFish)) {
+            player.grow();
+            score += 10;
+            std::cout << player.getName() << " a mancat " << targetFish.getName() << "! Scor: " << score << std::endl;
+        } else {
+            std::cout << player.getName() << " a fost mancat de " << targetFish.getName() << "! GAME OVER!" << std::endl;
+            exit(0);
+        }
+    }
+
+    void displayState() const {
+        std::cout << "Player: " << player << " | Score: " << score << std::endl;
+    }
+    const auto& getFishies() const { return aquarium.fishies; }//clasa Game e friedn cu clasa aquarium
+
+};
+
+int main()
+{
+    // Fish nemo("Nemo",20,3,1);
+    // nemo.display();
+
+    Fish playerFish("Sharkey", 9, 0, 55);
+    Game game(playerFish);
+
+    game.spawnFish(8); // Spawnează 5 pești în acvariu
+    game.displayState();
+
+
+    for (const auto& fish: game.getFishies())
+    {
+        std :: cout <<"Incerc sa mananc "<< fish << std::endl;///de pus doar numele
+        game.playTurn(fish);
+
+    }
+    ///DEADAUGATmesaj ca a castigat sau au pierdut!!
     ///
-    ///////////////////////////////////////////////////////////////////////////
-    ///                Exemplu de utilizare cod generat                     ///
-    ///////////////////////////////////////////////////////////////////////////
-    Helper helper;
-    helper.help();
-    ///////////////////////////////////////////////////////////////////////////
     return 0;
 }
