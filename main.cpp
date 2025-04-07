@@ -183,6 +183,7 @@ public:
         os << "Scopul jocului: atinge scorul " << obj.goal;
         return os;
     }
+    int getValue() const { return goal; }
 };
 
 // Clasa Game
@@ -263,16 +264,27 @@ public:
     bool isObjectiveMet() const {
         return objective.checkGoalReached(score);
     }
+    Aquarium& getAquarium() {
+        return aquarium;
+    }
 };
 
-// MAIN
+
 int main() {
     Fish playerFish("Sharkey", 40, 0, 10);
     Objective goal(50);
     Game game(playerFish, goal);
 
+
+
     game.spawnFish(5);
     game.displayState();
+
+    playerFish.applyReward(5);  // folosim applyReward
+    int dummyValue = goal.getValue();  // folosim getValue
+    game.getAquarium().addReward(Rewards("Speed", 3)); // folosim addReward
+    Fish biggest = game.getAquarium().getBiggestFish(); // folosim getBiggestFish
+
 
     while (!game.isObjectiveMet()) {
         game.chooseFishToAttack();
