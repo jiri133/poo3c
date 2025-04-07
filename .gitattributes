@@ -1,2 +1,4 @@
-generated/** linguist-generated
-ext/** linguist-vendored
+*.cpp linguist-language=C++
+*.h linguist-language=C++
+*.hpp linguist-language=C++
+*.cc linguist-language=C++
