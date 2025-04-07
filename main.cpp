@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <ctime>
 
-
 class Logger {
 public:
     static void logEvent(const std::string& msg) {
@@ -38,7 +37,7 @@ public:
     }
 
     bool canEat(const Fish& other) const {
-        return this->size > other.size;
+        return size > other.size;
     }
 
     void grow() {
@@ -49,6 +48,14 @@ public:
         size += bonus;
         speed += bonus / 2;
         Logger::logEvent(name + " a primit un bonus! Dimensiune: " + std::to_string(size));
+    }
+
+    void evolve() {
+        if (size > 50) {
+            name = "Reptile";
+            speed += 5;
+            Logger::logEvent("Jucatorul a evoluat in Reptila!");
+        }
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Fish& f) {
@@ -85,26 +92,20 @@ public:
     void addFish(const Fish& fish) { fishies.push_back(fish); }
     void addReward(const Rewards& reward) { rewards.push_back(reward); }
 
-    void showFish() const {
-        for (const auto& fish : fishies) {
-            std::cout << fish << std::endl; // foloseste operator<< compus
-        }
+    const std::vector<Fish>& getFishies() const { return fishies; }
+};
+
+class Objective {
+    int goal;
+public:
+    explicit Objective(int goalScore) : goal(goalScore) {}
+
+    bool checkGoalReached(int currentScore) const {
+        return currentScore >= goal;
     }
 
-    const std::vector<Fish>& getFishies() const { return fishies; } // getter in loc de friend
-
-    int countBiggerThan(const Fish& f) const { // functie mai complexa
-        int count = 0;
-        for (const auto& fish : fishies) {
-            if (fish.getSize() > f.getSize()) ++count;
-        }
-        return count;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const Aquarium& a) {
-        os << "Aquarium:\n";
-        for (const auto& fish : a.fishies) os << fish << "\n";
-        for (const auto& reward : a.rewards) os << reward << "\n";
+    friend std::ostream& operator<<(std::ostream& os, const Objective& obj) {
+        os << "Scopul jocului: atinge scorul " << obj.goal;
         return os;
     }
 };
@@ -113,18 +114,18 @@ class Game {
 private:
     Fish player;
     Aquarium aquarium;
+    Objective objective;
     int score;
 
 public:
-    explicit Game(const Fish& player) : player(player), score(0) {
-        Logger::logEvent("Jocul a fost pornit!");
-    }
+    Game(const Fish& player, const Objective& obj)
+        : player(player), objective(obj), score(0) {}
 
     void spawnFish(int num) {
-        srand((unsigned)time(0));
+        srand(static_cast<unsigned int>(time(0)));
         for (int i = 0; i < num; ++i) {
-            int randomSize = rand() % 10 + 1;
-            int randomSpeed = rand() % 5 + 1;
+            int randomSize = rand() % 100 + 1;
+            int randomSpeed = rand() % 50 + 1;
             Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
             aquarium.addFish(newFish);
         }
@@ -134,11 +135,28 @@ public:
         if (player.canEat(targetFish)) {
             player.grow();
             score += 10;
-            std::cout << player.getName() << " a mancat " << targetFish.getName() << "! Scor: " << score << std::endl;
-            checkWinCondition();
+            player.evolve();
+            Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
         } else {
-            std::cout << player.getName() << " a fost mancat de " << targetFish.getName() << "! GAME OVER!" << std::endl;
+            Logger::logEvent(player.getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
             exit(0);
+        }
+    }
+
+    void chooseFishToAttack() {
+        const auto& fishes = aquarium.getFishies();
+        for (size_t i = 0; i < fishes.size(); ++i) {
+            std::cout << i << ": " << fishes[i] << std::endl;
+        }
+
+        std::cout << "Alege indexul unui peste de atacat: ";
+        int idx;
+        std::cin >> idx;
+
+        if (idx >= 0 && idx < static_cast<int>(fishes.size())) {
+            playTurn(fishes[idx]);
+        } else {
+            std::cout << "Index invalid!" << std::endl;
         }
     }
 
@@ -146,33 +164,24 @@ public:
         std::cout << "Player: " << player << " | Score: " << score << std::endl;
     }
 
-    void evaluateRisk() const {
-        int threats = aquarium.countBiggerThan(player);
-        std::cout << "Numar de pesti mai mari decat jucatorul: " << threats << std::endl;
+    bool isObjectiveMet() const {
+        return objective.checkGoalReached(score);
     }
-
-    void checkWinCondition() const {
-        if (score >= 100) {
-            std::cout << "Felicitari! Ai castigat jocul!" << std::endl;
-            exit(0);
-        }
-    }
-
-    const std::vector<Fish>& getFishies() const { return aquarium.getFishies(); }
 };
 
 int main() {
-    Fish playerFish("Sharkey", 9, 2, 3);
-    Game game(playerFish);
+    Fish playerFish("Sharkey", 9, 0, 10);
+    Objective goal(50);
+    Game game(playerFish, goal);
 
     game.spawnFish(5);
     game.displayState();
-    game.evaluateRisk();
 
-    for (const auto& fish : game.getFishies()) {
-        std::cout << "Incerc sa mananc " << fish.getName() << std::endl;
-        game.playTurn(fish);
+    while (!game.isObjectiveMet()) {
+        game.chooseFishToAttack();
+        game.displayState();
     }
 
+    std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
     return 0;
 }
