@@ -51,11 +51,11 @@ public:
         size += growthFactor;
     }
 
-    void applyReward(const int bonus) {
-        size += bonus;
-        speed += bonus / 2;
-        Logger::logEvent(name + " a primit un bonus! Dimensiune: " + std::to_string(size));
-    }
+    // void applyReward(const int bonus) {
+    //     size += bonus;
+    //     speed += bonus / 2;
+    //     Logger::logEvent(name + " a primit un bonus! Dimensiune: " + std::to_string(size));
+    // }
 
     void evolve() {
         if (size > 50) {
@@ -102,8 +102,7 @@ public:
     // Destructor
     ~Rewards() {}
 
-    // Getter optional
-    int getValue() const { return value; }
+
 
     friend std::ostream& operator<<(std::ostream& os, const Rewards& r) {
         os << "Reward(" << r.type << ", Value: " << r.value << ")";
@@ -138,18 +137,17 @@ public:
 
     // Functii membru
     void addFish(const Fish& fish) { fishies.push_back(fish); }
-    void addReward(const Rewards& reward) { rewards.push_back(reward); }
-
+    // void addReward(const Rewards& reward) { rewards.push_back(reward); }
     const std::vector<Fish>& getFishies() const { return fishies; }
 
     // Functie netriviala: cel mai mare peste
-    Fish getBiggestFish() const {
-        Fish biggest = fishies.front();
-        for (const auto& f : fishies)
-            if (f.getSize() > biggest.getSize())
-                biggest = f;
-        return biggest;
-    }
+    // Fish getBiggestFish() const {
+    //     Fish biggest = fishies.front();
+    //     for (const auto& f : fishies)
+    //         if (f.getSize() > biggest.getSize())
+    //             biggest = f;
+    //     return biggest;
+    // }nu inca
 };
 
 // Clasa Objective
@@ -280,10 +278,7 @@ int main() {
     game.spawnFish(5);
     game.displayState();
 
-    playerFish.applyReward(5);  // folosim applyReward
-    int dummyValue = goal.getValue();  // folosim getValue
-    game.getAquarium().addReward(Rewards("Speed", 3)); // folosim addReward
-    Fish biggest = game.getAquarium().getBiggestFish(); // folosim getBiggestFish
+
 
 
     while (!game.isObjectiveMet()) {
