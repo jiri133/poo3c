@@ -65,8 +65,7 @@ public:
         }
     }
 
-    // Getterii marcati const
-    int getSize() const { return size; }
+    // int getSize() const { return size; }
     const std::string& getName() const { return name; }
 
     // Operator <<
@@ -181,7 +180,7 @@ public:
         os << "Scopul jocului: atinge scorul " << obj.goal;
         return os;
     }
-    int getValue() const { return goal; }
+    // int getValue() const { return goal; }
 };
 
 // Clasa Game
@@ -262,9 +261,9 @@ public:
     bool isObjectiveMet() const {
         return objective.checkGoalReached(score);
     }
-    Aquarium& getAquarium() {
-        return aquarium;
-    }
+    // Aquarium& getAquarium() {
+    //     return aquarium;
+    // }
 };
 
 
