@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 
+// Logger - fara modificari necesare
 class Logger {
 public:
     static void logEvent(const std::string& msg) {
@@ -11,6 +12,7 @@ public:
     }
 };
 
+// Clasa Fish
 class Fish {
     std::string name;
     int size;
@@ -18,14 +20,15 @@ class Fish {
     int growthFactor;
 
 public:
+    // Constructor cu parametri
     Fish(const std::string& name, int size, int speed, int growthFactor = 1)
         : name(name), size(size), speed(speed), growthFactor(growthFactor) {}
 
+    // Constructor de copiere
     Fish(const Fish& f)
         : name(f.name), size(f.size), speed(f.speed), growthFactor(f.growthFactor) {}
 
-    ~Fish() = default;
-
+    // Operator= de copiere
     Fish& operator=(const Fish& other) {
         if (this != &other) {
             name = other.name;
@@ -36,6 +39,10 @@ public:
         return *this;
     }
 
+    // Destructor
+    ~Fish() {}
+
+    // Metode
     bool canEat(const Fish& other) const {
         return size > other.size;
     }
@@ -44,7 +51,7 @@ public:
         size += growthFactor;
     }
 
-    void applyReward(int bonus) {
+    void applyReward(const int bonus) {
         size += bonus;
         speed += bonus / 2;
         Logger::logEvent(name + " a primit un bonus! Dimensiune: " + std::to_string(size));
@@ -58,25 +65,45 @@ public:
         }
     }
 
+    // Getterii marcati const
+    int getSize() const { return size; }
+    const std::string& getName() const { return name; }
+
+    // Operator <<
     friend std::ostream& operator<<(std::ostream& os, const Fish& f) {
         os << "Fish(" << f.name << ", Size: " << f.size << ", Speed: " << f.speed << ")";
         return os;
     }
-
-    int getSize() const { return size; }
-    const std::string& getName() const { return name; }
 };
 
+// Clasa Rewards
 class Rewards {
     std::string type;
     int value;
 
 public:
+    // Constructor cu un singur parametru => explicit
     explicit Rewards(const std::string& type, int value = 1)
         : type(type), value(value) {}
 
+    // Constructor de copiere
     Rewards(const Rewards& r)
         : type(r.type), value(r.value) {}
+
+    // Operator= de copiere
+    Rewards& operator=(const Rewards& r) {
+        if (this != &r) {
+            type = r.type;
+            value = r.value;
+        }
+        return *this;
+    }
+
+    // Destructor
+    ~Rewards() {}
+
+    // Getter optional
+    int getValue() const { return value; }
 
     friend std::ostream& operator<<(std::ostream& os, const Rewards& r) {
         os << "Reward(" << r.type << ", Value: " << r.value << ")";
@@ -84,23 +111,71 @@ public:
     }
 };
 
+// Clasa Aquarium
 class Aquarium {
     std::vector<Fish> fishies;
     std::vector<Rewards> rewards;
 
 public:
+    // Constructor
+    Aquarium() = default;
+
+    // Constructor de copiere
+    Aquarium(const Aquarium& a)
+        : fishies(a.fishies), rewards(a.rewards) {}
+
+    // Operator= de copiere
+    Aquarium& operator=(const Aquarium& other) {
+        if (this != &other) {
+            fishies = other.fishies;
+            rewards = other.rewards;
+        }
+        return *this;
+    }
+
+    // Destructor
+    ~Aquarium() {}
+
+    // Functii membru
     void addFish(const Fish& fish) { fishies.push_back(fish); }
     void addReward(const Rewards& reward) { rewards.push_back(reward); }
 
     const std::vector<Fish>& getFishies() const { return fishies; }
+
+    // Functie netriviala: cel mai mare peste
+    Fish getBiggestFish() const {
+        Fish biggest = fishies.front();
+        for (const auto& f : fishies)
+            if (f.getSize() > biggest.getSize())
+                biggest = f;
+        return biggest;
+    }
 };
 
+// Clasa Objective
 class Objective {
     int goal;
+
 public:
+    // explicit pentru constructor cu un singur parametru
     explicit Objective(int goalScore) : goal(goalScore) {}
 
-    bool checkGoalReached(int currentScore) const {
+    // Constructor de copiere
+    Objective(const Objective& o) : goal(o.goal) {}
+
+    // Operator= de copiere
+    Objective& operator=(const Objective& o) {
+        if (this != &o) {
+            goal = o.goal;
+        }
+        return *this;
+    }
+
+    // Destructor
+    ~Objective() {}
+
+    // Metoda const
+    bool checkGoalReached(const int currentScore) const {
         return currentScore >= goal;
     }
 
@@ -110,6 +185,7 @@ public:
     }
 };
 
+// Clasa Game
 class Game {
 private:
     Fish player;
@@ -118,10 +194,30 @@ private:
     int score;
 
 public:
+    // Constructor cu parametri
     Game(const Fish& player, const Objective& obj)
         : player(player), objective(obj), score(0) {}
 
-    void spawnFish(int num) {
+    // Constructor de copiere
+    Game(const Game& g)
+        : player(g.player), aquarium(g.aquarium), objective(g.objective), score(g.score) {}
+
+    // Operator= de copiere
+    Game& operator=(const Game& g) {
+        if (this != &g) {
+            player = g.player;
+            aquarium = g.aquarium;
+            objective = g.objective;
+            score = g.score;
+        }
+        return *this;
+    }
+
+    // Destructor
+    ~Game() {}
+
+    // Functii membru
+    void spawnFish(const int num) {
         srand(static_cast<unsigned int>(time(0)));
         for (int i = 0; i < num; ++i) {
             int randomSize = rand() % 100 + 1;
@@ -169,8 +265,9 @@ public:
     }
 };
 
+// MAIN
 int main() {
-    Fish playerFish("Sharkey", 9, 0, 10);
+    Fish playerFish("Sharkey", 40, 0, 10);
     Objective goal(50);
     Game game(playerFish, goal);
 
