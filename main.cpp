@@ -1,84 +1,85 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cstdlib>
+#include <ctime>
 
-class Fish
-{
-    std :: string name;
+
+class Logger {
+public:
+    static void logEvent(const std::string& msg) {
+        std::cout << "[LOG] " << msg << std::endl;
+    }
+};
+
+class Fish {
+    std::string name;
     int size;
     int speed;
     int growthFactor;
 
 public:
-    Fish(const std :: string& name, int size, int speed, int growthFactor = 1)//constrde initializare
-    : name(name), size(size), speed(speed), growthFactor(growthFactor){}
+    Fish(const std::string& name, int size, int speed, int growthFactor = 1)
+        : name(name), size(size), speed(speed), growthFactor(growthFactor) {}
 
-    Fish ( const Fish& f )//const de copiere
-    :name(f.name),size(f.size),speed(f.size),growthFactor(f.growthFactor){}
+    Fish(const Fish& f)
+        : name(f.name), size(f.size), speed(f.speed), growthFactor(f.growthFactor) {}
 
     ~Fish() = default;
 
-
-    //operator=
     Fish& operator=(const Fish& other) {
-        if (this != &other) {  // Verificăm auto-atribuierea
+        if (this != &other) {
             name = other.name;
             size = other.size;
             speed = other.speed;
             growthFactor = other.growthFactor;
         }
-        return *this;  // Returnăm obiectul curent
+        return *this;
     }
-    // verific dacă poate mânca alt pește
+
     bool canEat(const Fish& other) const {
         return this->size > other.size;
     }
-    // Creste pestele dupa ce a mancat
+
     void grow() {
         size += growthFactor;
     }
+
+    void applyReward(int bonus) {
+        size += bonus;
+        speed += bonus / 2;
+        Logger::logEvent(name + " a primit un bonus! Dimensiune: " + std::to_string(size));
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Fish& f) {
         os << "Fish(" << f.name << ", Size: " << f.size << ", Speed: " << f.speed << ")";
         return os;
     }
-    void applyReward(int bonus) {
-        size += bonus;
-        speed += bonus / 2;
-        std::cout << name << " a primit un bonus! Dimensiune: " << size << ", Viteză: " << speed << std::endl;
-    }
-
-
-    // void display() const
-    // {
-    //     std :: cout << name << " " << size << " " << speed << " " << growthFactor << std :: endl;
-    // }
 
     int getSize() const { return size; }
     const std::string& getName() const { return name; }
 };
-class Rewards
-{
-    std :: string type;
+
+class Rewards {
+    std::string type;
     int value;
+
 public:
-   explicit Rewards(const std :: string& type, int value = 1)
-        : type(type), value(value){}
+    explicit Rewards(const std::string& type, int value = 1)
+        : type(type), value(value) {}
+
     Rewards(const Rewards& r)
-        :type(r.type),value(r.value){}
+        : type(r.type), value(r.value) {}
+
     friend std::ostream& operator<<(std::ostream& os, const Rewards& r) {
         os << "Reward(" << r.type << ", Value: " << r.value << ")";
         return os;
     }
-
-
-
-
 };
 
-class Aquarium
-{
-    std :: vector <Fish> fishies;
-    std :: vector <Rewards> rewards;
+class Aquarium {
+    std::vector<Fish> fishies;
+    std::vector<Rewards> rewards;
 
 public:
     void addFish(const Fish& fish) { fishies.push_back(fish); }
@@ -86,12 +87,28 @@ public:
 
     void showFish() const {
         for (const auto& fish : fishies) {
-            std::cout << fish << std::endl;
+            std::cout << fish << std::endl; // foloseste operator<< compus
         }
-
     }
-    friend class Game;
+
+    const std::vector<Fish>& getFishies() const { return fishies; } // getter in loc de friend
+
+    int countBiggerThan(const Fish& f) const { // functie mai complexa
+        int count = 0;
+        for (const auto& fish : fishies) {
+            if (fish.getSize() > f.getSize()) ++count;
+        }
+        return count;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Aquarium& a) {
+        os << "Aquarium:\n";
+        for (const auto& fish : a.fishies) os << fish << "\n";
+        for (const auto& reward : a.rewards) os << reward << "\n";
+        return os;
+    }
 };
+
 class Game {
 private:
     Fish player;
@@ -99,12 +116,14 @@ private:
     int score;
 
 public:
-    explicit Game(const Fish& player) : player(player), score(0) {}
+    explicit Game(const Fish& player) : player(player), score(0) {
+        Logger::logEvent("Jocul a fost pornit!");
+    }
 
     void spawnFish(int num) {
-        srand(time(0));
+        srand((unsigned)time(0));
         for (int i = 0; i < num; ++i) {
-            int randomSize = rand() % 10 + 1;//de adaugat o formula mai buna la randomizare
+            int randomSize = rand() % 10 + 1;
             int randomSpeed = rand() % 5 + 1;
             Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
             aquarium.addFish(newFish);
@@ -116,6 +135,7 @@ public:
             player.grow();
             score += 10;
             std::cout << player.getName() << " a mancat " << targetFish.getName() << "! Scor: " << score << std::endl;
+            checkWinCondition();
         } else {
             std::cout << player.getName() << " a fost mancat de " << targetFish.getName() << "! GAME OVER!" << std::endl;
             exit(0);
@@ -125,29 +145,34 @@ public:
     void displayState() const {
         std::cout << "Player: " << player << " | Score: " << score << std::endl;
     }
-    const auto& getFishies() const { return aquarium.fishies; }//clasa Game e friedn cu clasa aquarium
 
+    void evaluateRisk() const {
+        int threats = aquarium.countBiggerThan(player);
+        std::cout << "Numar de pesti mai mari decat jucatorul: " << threats << std::endl;
+    }
+
+    void checkWinCondition() const {
+        if (score >= 100) {
+            std::cout << "Felicitari! Ai castigat jocul!" << std::endl;
+            exit(0);
+        }
+    }
+
+    const std::vector<Fish>& getFishies() const { return aquarium.getFishies(); }
 };
 
-int main()
-{
-    // Fish nemo("Nemo",20,3,1);
-    // nemo.display();
-
-    Fish playerFish("Sharkey", 9, 0, 55);
+int main() {
+    Fish playerFish("Sharkey", 9, 2, 3);
     Game game(playerFish);
 
-    game.spawnFish(8); // Spawnează 5 pești în acvariu
+    game.spawnFish(5);
     game.displayState();
+    game.evaluateRisk();
 
-
-    for (const auto& fish: game.getFishies())
-    {
-        std :: cout <<"Incerc sa mananc "<< fish << std::endl;///de pus doar numele
+    for (const auto& fish : game.getFishies()) {
+        std::cout << "Incerc sa mananc " << fish.getName() << std::endl;
         game.playTurn(fish);
-
     }
-    ///DEADAUGATmesaj ca a castigat sau au pierdut!!
-    ///
+
     return 0;
 }
