@@ -231,7 +231,7 @@ public:
     ~Game() {}
 
     // Functii membru
-    void spawnFish(const int num, const Fish playerFish) {
+    void spawnFish(const int num, const Fish& playerFish) {
         srand(static_cast<unsigned int>(time(0)));
        int  minn=1000;
         for (int i = 0; i < num; ++i) {
