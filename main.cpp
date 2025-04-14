@@ -314,5 +314,5 @@ int main() {
     std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
     return 0;
 
-    ///trb sa elimin pestele mancat
+    ///trb sa elimin pestele mancat.
 }
