@@ -49,16 +49,9 @@ public:
     }
 
     void grow() {
-
         size += 1;
         speed += 1;
     }
-
-    // void applyReward(const int bonus) {
-    //     size += bonus;
-    //     speed += bonus / 2;
-    //     Logger::logEvent(name + " a primit un bonus! Dimensiune: " + std::to_string(size));
-    // }
 
     void evolve() {
         if (size > 350) {
@@ -66,25 +59,21 @@ public:
             speed += 20;
             Logger::logEvent("Jucatorul a evoluat in Reptila!");
         }
-        if (size > 500)
-        {
+        if (size > 500) {
             name = "Amfibianul.";
             speed += 30;
             Logger::logEvent("Jucatorul a evoluat in Amfibian hihi!");
         }
-
-
     }
 
     const std::string& getName() const { return name; }
 
-    // Operator <<
     friend std::ostream& operator<<(std::ostream& os, const Fish& f) {
         os << "Fish(" << f.name << ", Size: " << f.size << ", Speed: " << f.speed << ")";
         return os;
     }
 
-     int getSize() const { return size; }
+    int getSize() const { return size; }
     int getSpeed() const { return speed; }
 };
 
@@ -94,15 +83,12 @@ class Rewards {
     int value;
 
 public:
-
     explicit Rewards(const std::string& type, int value = 1)
         : type(type), value(value) {}
 
-    // Constructor de copiere
     Rewards(const Rewards& r)
         : type(r.type), value(r.value) {}
 
-    // Operator= de copiere
     Rewards& operator=(const Rewards& r) {
         if (this != &r) {
             type = r.type;
@@ -111,10 +97,7 @@ public:
         return *this;
     }
 
-    // Destructor
     ~Rewards() {}
-
-
 
     friend std::ostream& operator<<(std::ostream& os, const Rewards& r) {
         os << "Reward(" << r.type << ", Value: " << r.value << ")";
@@ -129,14 +112,11 @@ class Aquarium {
     std::vector<int> size = {0, 1, 2, 3, 4, 5, 6};
 
 public:
-    // Constructor
     Aquarium() = default;
 
-    // Constructor de copiere
     Aquarium(const Aquarium& a)
         : fishies(a.fishies), rewards(a.rewards) {}
 
-    // Operator= de copiere
     Aquarium& operator=(const Aquarium& other) {
         if (this != &other) {
             fishies = other.fishies;
@@ -145,12 +125,9 @@ public:
         return *this;
     }
 
-    // Destructor
     ~Aquarium() {}
 
-    // Functii membru
     void addFish(const Fish& fish) { fishies.push_back(fish); }
-    // void addReward(const Rewards& reward) { rewards.push_back(reward); }
     const std::vector<Fish>& getFishies() const { return fishies; }
 
     void removeFish(int index) {
@@ -158,14 +135,6 @@ public:
             fishies.erase(fishies.begin() + index);
         }
     }
-
-    // Fish getBiggestFish() const {
-    //     Fish biggest = fishies.front();
-    //     for (const auto& f : fishies)
-    //         if (f.getSize() > biggest.getSize())
-    //             biggest = f;
-    //     return biggest;
-    // }nu inca
 };
 
 // Clasa Objective
@@ -173,13 +142,10 @@ class Objective {
     int goal;
 
 public:
-    // explicit pentru constructor cu un singur parametru
     explicit Objective(int goalScore) : goal(goalScore) {}
 
-    // Constructor de copiere
     Objective(const Objective& o) : goal(o.goal) {}
 
-    // Operator= de copiere
     Objective& operator=(const Objective& o) {
         if (this != &o) {
             goal = o.goal;
@@ -187,10 +153,8 @@ public:
         return *this;
     }
 
-    // Destructor
     ~Objective() {}
 
-    // Metoda const
     bool checkGoalReached(const int currentScore) const {
         return currentScore >= goal;
     }
@@ -199,77 +163,73 @@ public:
         os << "Scopul jocului: atinge scorul " << obj.goal;
         return os;
     }
-     // int getValue() const { return goal; }
 };
 
 // Clasa Game
+enum class ThreatLevel { Sunrise, Noon, Midnight };
 class Game {
+
 private:
     Fish player;
     Aquarium aquarium;
     Objective objective;
     int score;
+    ThreatLevel threatLevel;
 
 public:
-    // Constructor cu parametri
+
     Game(const Fish& player, const Objective& obj)
-        : player(player), objective(obj), score(0) {}
+        : player(player), objective(obj), score(0), threatLevel(ThreatLevel::Sunrise) {}
 
-    // Constructor de copiere
     Game(const Game& g)
-        : player(g.player), aquarium(g.aquarium), objective(g.objective), score(g.score) {}
+        : player(g.player), aquarium(g.aquarium), objective(g.objective), score(g.score), threatLevel(g.threatLevel) {}
 
-    // Operator= de copiere
     Game& operator=(const Game& g) {
         if (this != &g) {
             player = g.player;
             aquarium = g.aquarium;
             objective = g.objective;
             score = g.score;
+            threatLevel = g.threatLevel;
         }
         return *this;
     }
 
-    // Destructor
     ~Game() {}
 
-    // Functii membru
-    void spawnFish(const int num, const Fish& playerFish) {
+    void setThreatLevel(ThreatLevel level) {
+        threatLevel = level;
+    }
 
-        std::random_device rd;  // a seed source for the random number engine
-        std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
-        std::uniform_int_distribution<> distrib(playerFish.getSize()+1, 6);
+    void spawnFish(const int num, const Fish& playerFish) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distrib(playerFish.getSize() + 1, 6);
 
         srand(static_cast<unsigned int>(time(0)));
-       int  minn=1000;
-        int i=0;
-        //20 de pesti micuti
-        while (i <=20 )
-        {
+        int i = 0;
+        while (i <= 20) {
             Fish newFish("Fish" + std::to_string(i), 0, 0);
             aquarium.addFish(newFish);
             i++;
         }
-        for (int i = 0; i < num; ++i) { //in fucntie de threat level
-            int randomSize=distrib(gen);
-            int randomSpeed=randomSize;
+        for (int i = 0; i < num; ++i) {
+            int randomSize = distrib(gen);
+            int randomSpeed = randomSize;
             Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
             aquarium.addFish(newFish);
         }
-
     }
 
     void playTurn(const Fish& targetFish) {
         if (player.canEat(targetFish)) {
-            if (targetFish.getSize()<player.getSize())
-            {
+            if (targetFish.getSize() < player.getSize()) {
                 score += 5;
-            }
-            else
+            } else {
                 score += 10;
-            if (score % 200 == 0)//cd mananca deja 20 de pestisori de un tip creste
-            player.grow();
-
+            }
+            if (score % 200 == 0)
+                player.grow();
 
             player.evolve();
 
@@ -294,7 +254,6 @@ public:
         if (idx >= 0 && idx < static_cast<int>(fishes.size())) {
             playTurn(fishes[idx]);
             if (player.canEat(fishes[idx])) {
-
                 aquarium.removeFish(idx);
             }
         } else {
@@ -309,26 +268,32 @@ public:
     bool isObjectiveMet() const {
         return objective.checkGoalReached(score);
     }
-    // Aquarium& getAquarium() {
-    //     return aquarium;
-    // }
-
-    //verific daca exista pestisori destui de mici sa fie mancati
 };
-
 
 int main() {
     Fish playerFish("Sharkey", 1, 0, 10);
     Objective goal(50);
     Game game(playerFish, goal);
 
+    std::cout << "Alege nivelul de dificultate:\n";
+    std::cout << "1. Sunrise (usor)\n";
+    std::cout << "2. Noon (mediu)\n";
+    std::cout << "3. Midnight (greu)\n";
+    int levelChoice;
+    std::cin >> levelChoice;
 
+    ThreatLevel level;
+    switch (levelChoice) {
+        case 1: level = ThreatLevel::Sunrise; break;
+        case 2: level = ThreatLevel::Noon; break;
+        case 3: level = ThreatLevel::Midnight; break;
+        default: level = ThreatLevel::Sunrise; break;
+    }
+
+    game.setThreatLevel(level);
 
     game.spawnFish(5, playerFish);
     game.displayState();
-
-
-
 
     while (!game.isObjectiveMet()) {
         game.chooseFishToAttack();
@@ -347,4 +312,5 @@ int main() {
     //////poate mi-ar fi mai usor daca ar exista valori implicite la marimi-adica 6 marimi de pesti
     ///
     ////si pestele incepe constant la o anumita dimensiune
+    ///////adaptare pe threat level cati se spawneza
 }
