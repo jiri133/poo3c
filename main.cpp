@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <random>
 
 // Logger - fara modificari necesare
 class Logger {
@@ -47,9 +48,10 @@ public:
         return size > other.size;
     }
 
-    void grow(int sizee, int spped) {
-        size += sizee;
-        speed += spped;
+    void grow() {
+
+        size += 1;
+        speed += 1;
     }
 
     // void applyReward(const int bonus) {
@@ -83,7 +85,7 @@ public:
     }
 
      int getSize() const { return size; }
-    int getSpeed() const { return size; }
+    int getSpeed() const { return speed; }
 };
 
 // Clasa Rewards
@@ -124,6 +126,7 @@ public:
 class Aquarium {
     std::vector<Fish> fishies;
     std::vector<Rewards> rewards;
+    std::vector<int> size = {0, 1, 2, 3, 4, 5, 6};
 
 public:
     // Constructor
@@ -232,35 +235,41 @@ public:
 
     // Functii membru
     void spawnFish(const int num, const Fish& playerFish) {
+
+        std::random_device rd;  // a seed source for the random number engine
+        std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
+        std::uniform_int_distribution<> distrib(playerFish.getSize()+1, 6);
+
         srand(static_cast<unsigned int>(time(0)));
        int  minn=1000;
-        for (int i = 0; i < num; ++i) {
-            int randomSize = rand() % 100 + 1;
-            int randomSpeed = rand() % 50 + 1;
-            if (randomSize < minn )
-            {
-                minn=randomSize;
-            }
+        int i=0;
+        //20 de pesti micuti
+        while (i <=20 )
+        {
+            Fish newFish("Fish" + std::to_string(i), 0, 0);
+            aquarium.addFish(newFish);
+            i++;
+        }
+        for (int i = 0; i < num; ++i) { //in fucntie de threat level
+            int randomSize=distrib(gen);
+            int randomSpeed=randomSize;
             Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
             aquarium.addFish(newFish);
         }
-        //in caz ca se spawneaza prea mari, sa aiba sanse sa sii castige
-        if (minn > playerFish.getSize())
-        {
-            for (int i = 0; i < num; ++i) {
-                int randomSize = rand() % playerFish.getSize() + 1;
-                int randomSpeed = rand() % (playerFish.getSize()/2) + 1;
 
-                Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
-                aquarium.addFish(newFish);
-            }
-        }
     }
 
     void playTurn(const Fish& targetFish) {
         if (player.canEat(targetFish)) {
-            player.grow(targetFish.getSize(), targetFish.getSpeed());
-            score += 10;
+            if (targetFish.getSize()<player.getSize())
+            {
+                score += 5;
+            }
+            else
+                score += 10;
+            if (score % 200 == 0)//cd mananca deja 20 de pestisori de un tip creste
+            player.grow();
+
 
             player.evolve();
 
@@ -303,11 +312,13 @@ public:
     // Aquarium& getAquarium() {
     //     return aquarium;
     // }
+
+    //verific daca exista pestisori destui de mici sa fie mancati
 };
 
 
 int main() {
-    Fish playerFish("Sharkey", 4, 0, 10);
+    Fish playerFish("Sharkey", 1, 0, 10);
     Objective goal(50);
     Game game(playerFish, goal);
 
@@ -329,4 +340,11 @@ int main() {
 
     ///trb sa elimin pestele mancat.
     /////constant trebuie sa am un nr minim de pesti micuti pe care sa-i manance ca sa poata sa manance pesti mai mari
+    ////cum sa functioneze-- pe nivele, depinde de ce threat alegi--- threat mic, putin pesti mari-- threat mare-- multi pesti mari- dar in orice caz trb sa exisre
+    /////nr minim de pesti mici ca sa poti sa castigi
+    ///
+    /////la un anumit interval de timp se spawneazaa pestisior mai mici constant
+    //////poate mi-ar fi mai usor daca ar exista valori implicite la marimi-adica 6 marimi de pesti
+    ///
+    ////si pestele incepe constant la o anumita dimensiune
 }
