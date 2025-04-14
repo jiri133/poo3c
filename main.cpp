@@ -47,8 +47,9 @@ public:
         return size > other.size;
     }
 
-    void grow() {
-        size += growthFactor;
+    void grow(int sizee, int spped) {
+        size += sizee;
+        speed += spped;
     }
 
     // void applyReward(const int bonus) {
@@ -82,6 +83,7 @@ public:
     }
 
      int getSize() const { return size; }
+    int getSpeed() const { return size; }
 };
 
 // Clasa Rewards
@@ -148,6 +150,11 @@ public:
     // void addReward(const Rewards& reward) { rewards.push_back(reward); }
     const std::vector<Fish>& getFishies() const { return fishies; }
 
+    void removeFish(int index) {
+        if (index >= 0 && index < static_cast<int>(fishies.size())) {
+            fishies.erase(fishies.begin() + index);
+        }
+    }
 
     // Fish getBiggestFish() const {
     //     Fish biggest = fishies.front();
@@ -252,9 +259,11 @@ public:
 
     void playTurn(const Fish& targetFish) {
         if (player.canEat(targetFish)) {
-            player.grow();
+            player.grow(targetFish.getSize(), targetFish.getSpeed());
             score += 10;
+
             player.evolve();
+
             Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
 
         } else {
@@ -275,6 +284,10 @@ public:
 
         if (idx >= 0 && idx < static_cast<int>(fishes.size())) {
             playTurn(fishes[idx]);
+            if (player.canEat(fishes[idx])) {
+
+                aquarium.removeFish(idx);
+            }
         } else {
             std::cout << "Index invalid!" << std::endl;
         }
@@ -315,4 +328,5 @@ int main() {
     return 0;
 
     ///trb sa elimin pestele mancat.
+    /////constant trebuie sa am un nr minim de pesti micuti pe care sa-i manance ca sa poata sa manance pesti mai mari
 }
