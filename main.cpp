@@ -74,7 +74,7 @@ public:
     }
 
     int getSize() const { return size; }
-    int getSpeed() const { return speed; }
+    // int getSpeed() const { return speed; }
 };
 
 // Clasa Rewards
@@ -213,7 +213,7 @@ public:
             aquarium.addFish(newFish);
             i++;
         }
-        for (int i = 0; i < num; ++i) {
+        for ( i = 0; i < num; ++i) {
             int randomSize = distrib(gen);
             int randomSpeed = randomSize;
             Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
