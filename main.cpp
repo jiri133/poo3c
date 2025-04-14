@@ -58,14 +58,21 @@ public:
     // }
 
     void evolve() {
-        if (size > 50) {
-            name = "Reptile";
-            speed += 5;
+        if (size > 350) {
+            name = "Reptila REMO";
+            speed += 20;
             Logger::logEvent("Jucatorul a evoluat in Reptila!");
         }
+        if (size > 500)
+        {
+            name = "Amfibianul.";
+            speed += 30;
+            Logger::logEvent("Jucatorul a evoluat in Amfibian hihi!");
+        }
+
+
     }
 
-    // int getSize() const { return size; }
     const std::string& getName() const { return name; }
 
     // Operator <<
@@ -73,6 +80,8 @@ public:
         os << "Fish(" << f.name << ", Size: " << f.size << ", Speed: " << f.speed << ")";
         return os;
     }
+
+     int getSize() const { return size; }
 };
 
 // Clasa Rewards
@@ -81,7 +90,7 @@ class Rewards {
     int value;
 
 public:
-    // Constructor cu un singur parametru => explicit
+
     explicit Rewards(const std::string& type, int value = 1)
         : type(type), value(value) {}
 
@@ -139,7 +148,7 @@ public:
     // void addReward(const Rewards& reward) { rewards.push_back(reward); }
     const std::vector<Fish>& getFishies() const { return fishies; }
 
-    // Functie netriviala: cel mai mare peste
+
     // Fish getBiggestFish() const {
     //     Fish biggest = fishies.front();
     //     for (const auto& f : fishies)
@@ -180,7 +189,7 @@ public:
         os << "Scopul jocului: atinge scorul " << obj.goal;
         return os;
     }
-    // int getValue() const { return goal; }
+     // int getValue() const { return goal; }
 };
 
 // Clasa Game
@@ -215,13 +224,29 @@ public:
     ~Game() {}
 
     // Functii membru
-    void spawnFish(const int num) {
+    void spawnFish(const int num, const Fish playerFish) {
         srand(static_cast<unsigned int>(time(0)));
+       int  minn=1000;
         for (int i = 0; i < num; ++i) {
             int randomSize = rand() % 100 + 1;
             int randomSpeed = rand() % 50 + 1;
+            if (randomSize < minn )
+            {
+                minn=randomSize;
+            }
             Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
             aquarium.addFish(newFish);
+        }
+        //in caz ca se spawneaza prea mari, sa aiba sanse sa sii castige
+        if (minn > playerFish.getSize())
+        {
+            for (int i = 0; i < num; ++i) {
+                int randomSize = rand() % playerFish.getSize() + 1;
+                int randomSpeed = rand() % (playerFish.getSize()/2) + 1;
+
+                Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
+                aquarium.addFish(newFish);
+            }
         }
     }
 
@@ -231,6 +256,7 @@ public:
             score += 10;
             player.evolve();
             Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
+
         } else {
             Logger::logEvent(player.getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
             exit(0);
@@ -268,13 +294,13 @@ public:
 
 
 int main() {
-    Fish playerFish("Sharkey", 40, 0, 10);
+    Fish playerFish("Sharkey", 4, 0, 10);
     Objective goal(50);
     Game game(playerFish, goal);
 
 
 
-    game.spawnFish(5);
+    game.spawnFish(5, playerFish);
     game.displayState();
 
 
@@ -287,4 +313,6 @@ int main() {
 
     std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
     return 0;
+
+    ///trb sa elimin pestele mancat
 }
