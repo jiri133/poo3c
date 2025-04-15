@@ -228,7 +228,7 @@ public:
                 {
                     int randomSize = distrib(gen);
                     int randomSpeed = randomSize;
-                    Fish newFish("Fish" + std::to_string(i) + std::to_string(i+randomSize), randomSize, 0);
+                    Fish newFish("Fish" + std::to_string(i) + std::to_string(i+randomSize), randomSize, randomSpeed);
                     aquarium.addFish(newFish);
 
                 }
@@ -238,7 +238,7 @@ public:
                  {
                      int randomSize = distrib(gen);
                      int randomSpeed = randomSize;
-                     Fish newFish("Fish" + std::to_string(i), randomSize, 0);
+                     Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
                      aquarium.addFish(newFish);
                  }
                 break;
