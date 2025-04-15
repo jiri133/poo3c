@@ -201,7 +201,7 @@ public:
         threatLevel = level;
     }
 
-    void spawnFish(const int num, const Fish& playerFish) {
+    void spawnFish(const int num, const Fish& playerFish, const ThreatLevel& threatLevel) {
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> distrib(playerFish.getSize() + 1, 6);
@@ -213,11 +213,38 @@ public:
             aquarium.addFish(newFish);
             i++;
         }
-        for ( i = 0; i < num; ++i) {
-            int randomSize = distrib(gen);
-            int randomSpeed = randomSize;
-            Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
-            aquarium.addFish(newFish);
+        switch (threatLevel)
+        {
+            case ThreatLevel::Sunrise:
+                for ( i = 0; i < 10; ++i) {
+                    int randomSize = distrib(gen);
+                    int randomSpeed = randomSize;
+                    Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
+                    aquarium.addFish(newFish);
+                }
+                break;
+            case ThreatLevel::Noon:
+                for ( i = 0; i < 20; ++i)
+                {
+                    int randomSize = distrib(gen);
+                    int randomSpeed = randomSize;
+                    Fish newFish("Fish" + std::to_string(i) + std::to_string(i+randomSize), randomSize, 0);
+                    aquarium.addFish(newFish);
+
+                }
+                break;
+             case ThreatLevel::Midnight:
+                 for ( i = 0; i < 30; ++i)
+                 {
+                     int randomSize = distrib(gen);
+                     int randomSpeed = randomSize;
+                     Fish newFish("Fish" + std::to_string(i), randomSize, 0);
+                     aquarium.addFish(newFish);
+                 }
+                break;
+            default:
+                std :: cout<<"ThreatLevel is invalid";
+
         }
     }
 
@@ -275,10 +302,10 @@ int main() {
     Objective goal(50);
     Game game(playerFish, goal);
 
-    std::cout << "Alege nivelul de dificultate:\n";
-    std::cout << "1. Sunrise (usor)\n";
-    std::cout << "2. Noon (mediu)\n";
-    std::cout << "3. Midnight (greu)\n";
+    std::cout << "Alege nivelul de dificultate(Threat Level):\n";
+    std::cout << "1. Sunrise (easy)\n";
+    std::cout << "2. Noon (medium)\n";
+    std::cout << "3. Midnight (hard)\n";
     int levelChoice;
     std::cin >> levelChoice;
 
@@ -292,7 +319,7 @@ int main() {
 
     game.setThreatLevel(level);
 
-    game.spawnFish(5, playerFish);
+    game.spawnFish(5, playerFish, level);
     game.displayState();
 
     while (!game.isObjectiveMet()) {
@@ -313,4 +340,6 @@ int main() {
     ///
     ////si pestele incepe constant la o anumita dimensiune
     ///////adaptare pe threat level cati se spawneza
+    ///
+    //////in momentul cand ma aproprii  de un peste mare, pestele mare sa incerce sa ma manance
 }
