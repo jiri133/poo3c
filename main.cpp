@@ -208,7 +208,7 @@ public:
 
         srand(static_cast<unsigned int>(time(0)));
         int i = 0;
-        while (i <= 20) {
+        while (i <= num) {
             Fish newFish("Fish" + std::to_string(i), 0, 0);
             aquarium.addFish(newFish);
             i++;
