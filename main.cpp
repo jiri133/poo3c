@@ -78,18 +78,18 @@ public:
 };
 
 // Clasa Rewards
-class Rewards {
+class Reward {
     std::string type;
     int value;
 
 public:
-    explicit Rewards(const std::string& type, int value = 1)
+    explicit Reward(const std::string& type, int value = 1)
         : type(type), value(value) {}
 
-    Rewards(const Rewards& r)
+    Reward(const Reward& r)
         : type(r.type), value(r.value) {}
 
-    Rewards& operator=(const Rewards& r) {
+    Reward& operator=(const Reward& r) {
         if (this != &r) {
             type = r.type;
             value = r.value;
@@ -97,9 +97,9 @@ public:
         return *this;
     }
 
-    ~Rewards() {}
+    ~Reward() {}
 
-    friend std::ostream& operator<<(std::ostream& os, const Rewards& r) {
+    friend std::ostream& operator<<(std::ostream& os, const Reward& r) {
         os << "Reward(" << r.type << ", Value: " << r.value << ")";
         return os;
     }
@@ -108,13 +108,13 @@ public:
 // Clasa Aquarium
 class Aquarium {
     std::vector<Fish> fishies;
-    std::vector<Rewards> rewards;
+    std::vector<Reward> rewards;
     std::vector<int> size = {0, 1, 2, 3, 4, 5, 6};
 
 public:
-    Aquarium() = default;
+    Aquarium() = default;//ptr ca am alti constr
 
-    Aquarium(const Aquarium& a)
+    explicit Aquarium(const Aquarium& a)
         : fishies(a.fishies), rewards(a.rewards) {}
 
     Aquarium& operator=(const Aquarium& other) {
@@ -134,6 +134,20 @@ public:
         if (index >= 0 && index < static_cast<int>(fishies.size())) {
             fishies.erase(fishies.begin() + index);
         }
+    }
+   friend std::ostream& operator<<(std::ostream& os, const Aquarium& aquarium) {
+        os << "Acvariul contine urmatorii pesti:\n";
+        const auto& fishList = aquarium.getFishies();  // Accesam lista de pesti
+        if (fishList.empty()) {
+            os << "Nu exista pesti in acvariu.\n";
+        } else {
+            int cnt=0;
+            for (const auto& fish : fishList) {
+                os << cnt <<'.'<<fish << std::endl;  // Afișăm fiecare pește folosind operatorul << definit pentru Fish
+                ++cnt;
+            }
+        }
+        return os;
     }
 };
 
@@ -202,11 +216,11 @@ public:
     }
 
     void spawnFish(const int num, const Fish& playerFish, const ThreatLevel& threatLevel) {
-        std::random_device rd;
-        std::mt19937 gen(rd());
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
         std::uniform_int_distribution<> distrib(playerFish.getSize() + 1, 6);
 
-        srand(static_cast<unsigned int>(time(0)));
+        // srand(static_cast<unsigned int>(time(0)));
         int i = 0;
         while (i <= num) {
             Fish newFish("Fish" + std::to_string(i), 0, 0);
@@ -270,26 +284,31 @@ public:
 
     void chooseFishToAttack() {
         const auto& fishes = aquarium.getFishies();
-        for (size_t i = 0; i < fishes.size(); ++i) {
-            std::cout << i << ": " << fishes[i] << std::endl;
-        }
+
 
         std::cout << "Alege indexul unui peste de atacat: ";
         int idx;
         std::cin >> idx;
 
         if (idx >= 0 && idx < static_cast<int>(fishes.size())) {
-            playTurn(fishes[idx]);
+
             if (player.canEat(fishes[idx])) {
+                playTurn(fishes[idx]);
                 aquarium.removeFish(idx);
             }
-        } else {
+            else
+                playTurn(fishes[idx]);
+        }
+        else {
             std::cout << "Index invalid!" << std::endl;
         }
     }
 
-    void displayState() const {
-        std::cout << "Player: " << player << " | Score: " << score << std::endl;
+    void displayState() const
+    {
+        std::cout << "Starea jocului: " << std::endl;
+        std::cout << "Jucator: " << player << " | Scor: " << score << std::endl;
+        std::cout << aquarium;//compunere op<<    }
     }
 
     bool isObjectiveMet() const {
@@ -324,15 +343,24 @@ int main() {
 
     while (!game.isObjectiveMet()) {
         game.chooseFishToAttack();
-        game.displayState();
+        std :: cout << "Vrei sa vezi pestii ramasi in acvariu?(y/n)"
+        << std::endl;
+        char answ;
+        std::cin >> answ;
+        if (answ == 'y')
+        {
+            game.displayState();
+        }
+
+
     }
 
     std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
     return 0;
 
-    ///trb sa elimin pestele mancat.
+    ///trb sa elimin pestele mancat --check .
     /////constant trebuie sa am un nr minim de pesti micuti pe care sa-i manance ca sa poata sa manance pesti mai mari
-    ////cum sa functioneze-- pe nivele, depinde de ce threat alegi--- threat mic, putin pesti mari-- threat mare-- multi pesti mari- dar in orice caz trb sa exisre
+    ////cum sa functioneze-- pe nivele, depinde de ce threat alegi--- threat mic, putin pesti mari-- threat mare-- multi pesti mari- dar in orice caz trb sa exisre--ideea de baza check-poate fii elaborata in sensul ca ar trebui spawnati recurent pesti
     /////nr minim de pesti mici ca sa poti sa castigi
     ///
     /////la un anumit interval de timp se spawneazaa pestisior mai mici constant
