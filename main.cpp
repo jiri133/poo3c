@@ -550,7 +550,7 @@ int main() {
 
     game.setThreatLevel(level);
 
-    std::thread rewardThread(Game :: rewardSpawnerThread, std::ref(game));
+    std::thread rewardThread(&Game::rewardSpawnerThread, &game);
     rewardThread.detach(); // ruleaza in fundal
 
     game.spawnFish(5, playerFish, level);
