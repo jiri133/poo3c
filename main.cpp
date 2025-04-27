@@ -2,8 +2,9 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
-#include <ctime>
 #include <random>
+#include <thread>
+#include <chrono>
 
 // Logger - fara modificari necesare
 class Logger {
@@ -81,26 +82,33 @@ public:
 class Reward {
     std::string type;
     int value;
+    int turns;
 
 public:
-    explicit Reward(const std::string& type, int value = 1)
-        : type(type), value(value) {}
+     Reward(const std::string& type, int value = 1,int turns = 1)
+        : type(type), value(value), turns(turns) {}
 
-    Reward(const Reward& r)
-        : type(r.type), value(r.value) {}
+    explicit Reward(const Reward& r)
+        : type(r.type), value(r.value), turns(r.turns) {}
 
     Reward& operator=(const Reward& r) {
         if (this != &r) {
             type = r.type;
             value = r.value;
+            turns = r.turns;
         }
         return *this;
     }
 
+    bool isInvincible()const
+    {
+        return type == "Invincible";//daca e invincibil poate sa manance ce peste vrea ptr o tura
+
+    }
     ~Reward() {}
 
     friend std::ostream& operator<<(std::ostream& os, const Reward& r) {
-        os << "Reward(" << r.type << ", Value: " << r.value << ")";
+        os << "Reward(" << r.type << ", Value: " << r.value << ", Turns: " << r.turns<< ")"<<std:: endl;;
         return os;
     }
 };
@@ -114,6 +122,7 @@ class Aquarium {
 public:
     Aquarium() = default;//ptr ca am alti constr
 
+
     explicit Aquarium(const Aquarium& a)
         : fishies(a.fishies), rewards(a.rewards) {}
 
@@ -125,7 +134,10 @@ public:
         return *this;
     }
 
+
     ~Aquarium() {}
+
+
 
     void addFish(const Fish& fish) { fishies.push_back(fish); }
     const std::vector<Fish>& getFishies() const { return fishies; }
@@ -148,6 +160,22 @@ public:
             }
         }
         return os;
+    }
+
+
+    void addReward(const Reward& r)
+    {
+        rewards.push_back(r);
+    }
+
+    const std::vector<Reward>& getRewards() const { return rewards; }
+
+    void removeReward(int index)
+    {
+        if (index >= 0 && index < static_cast<int>(rewards.size()))
+        {
+            rewards.erase(rewards.begin()+index);
+        }
     }
 };
 
@@ -189,14 +217,16 @@ private:
     Objective objective;
     int score;
     ThreatLevel threatLevel;
+    bool isInvincible=false;
+
 
 public:
 
     Game(const Fish& player, const Objective& obj)
-        : player(player), objective(obj), score(0), threatLevel(ThreatLevel::Sunrise) {}
+        : player(player), objective(obj), score(0), threatLevel(ThreatLevel::Sunrise),isInvincible(false){}
 
     Game(const Game& g)
-        : player(g.player), aquarium(g.aquarium), objective(g.objective), score(g.score), threatLevel(g.threatLevel) {}
+        : player(g.player), aquarium(g.aquarium), objective(g.objective), score(g.score), threatLevel(g.threatLevel),isInvincible(g.isInvincible) {}
 
     Game& operator=(const Game& g) {
         if (this != &g) {
@@ -205,6 +235,7 @@ public:
             objective = g.objective;
             score = g.score;
             threatLevel = g.threatLevel;
+            isInvincible = g.isInvincible;
         }
         return *this;
     }
@@ -251,13 +282,29 @@ public:
         }
     }
 
-    void playTurn(const Fish& targetFish) {
-        if (player.canEat(targetFish)) {
-            if (targetFish.getSize() < player.getSize()) {
-                score += 20;
+    void playTurn(const Fish& targetFish)
+    {
+        if (isInvincible==false) {
+            if (player.canEat(targetFish)) {
+                if (targetFish.getSize() < player.getSize()) {
+                    score += 20;
+                } else {
+                    score += 50;
+                }
+                if (score % 100 == 0)
+                    player.grow();
+
+                player.evolve();
+
+                Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
+
             } else {
-                score += 50;
+                Logger::logEvent(player.getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
+                exit(0);
             }
+        }
+        else{
+            score+=50;
             if (score % 100 == 0)
                 player.grow();
 
@@ -265,9 +312,6 @@ public:
 
             Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
 
-        } else {
-            Logger::logEvent(player.getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
-            exit(0);
         }
     }
 
@@ -304,9 +348,36 @@ public:
 
     void chooseFishToAttack() {
         const auto& fishes = aquarium.getFishies();
+        std :: cout << "Vrei sa vezi pestii ramasi in acvariu?(y/n)"<< std::endl;
+        char answ;
+        std::cin >> answ;
+        int ok=1;
 
+        while (ok==1)
+        {
+            switch (answ)
+            {
+                case 'y':
+                {
+                    displayState();
+                    ok=0;
+                    break;
+                }
+                case 'n':
+                {
+                    ok=0;
+                    break;
+                }
+                default:
+                {
+                    std::cout<<"ai introdus o valoare gresita, te rog reincearca:"<<std:: endl;
+                    std::cin >> answ;
+                    break;
+                }
+            }
+        }
 
-        std::cout << "Alege indexul unui peste de atacat: ";
+        std::cout << "Alege indexul unui peste de atacat: "<<std:: endl;
         int idx;
 
 
@@ -315,14 +386,14 @@ public:
             if (std::cin.fail()) {
                 std::cin.clear(); // sterge starea de eroare
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // arunca ce a ramas în buffer
-                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << fishes.size()-1 << ": ";
+                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << fishes.size()-1 << ": "<<std:: endl;
                 continue;
             }
             if (idx >= 0 && idx < static_cast<int>(fishes.size())) {
                 break; // index corect, ieșim din while
             }
             else {
-                std::cout << "Index invalid! Introdu un numar intre 0 si " << fishes.size()-1 << ": ";
+                std::cout << "Index invalid! Introdu un numar intre 0 si " << fishes.size()-1 << ": "<<std:: endl;
             }
         }
 
@@ -334,7 +405,15 @@ public:
                 aquarium.removeFish(idx);
             }
             else
+            {
                 playTurn(fishes[idx]);
+                if (isInvincible==true)
+                {
+                    aquarium.removeFish(idx);
+                    isInvincible=false;
+
+                }
+            }
         }
         else {
             std::cout << "Index invalid!" << std::endl;
@@ -351,12 +430,109 @@ public:
     bool isObjectiveMet() const {
         return objective.checkGoalReached(score,player);
     }
+
+
+    void RandomReward()
+    {
+        Reward reward("Invincible",2,1);
+        aquarium.addReward(reward);
+    }
+    void rewardSpawnerThread() {
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::seconds(30)); // asteapta 1 minut
+            RandomReward(); // spawnez reward-ul
+            Logger :: logEvent( " O recompensa de invincibilitate a aparut din neant!");
+        }
+    }
+
+    void chooseReward()
+    {
+        int cnt=0;
+        std::vector<Reward> rewards;
+        rewards=aquarium.getRewards();
+        std::cout<<"Alege indexul Recompensei: "<<std:: endl;
+        cnt=0;
+        for (const auto& reward : rewards)
+        {
+            std::cout << cnt <<". " <<reward<<std:: endl;
+            cnt++;
+        }
+        int idx;
+        while (true) {
+            std::cin >> idx;
+            if (std::cin.fail()) {
+                std::cin.clear(); // sterge starea de eroare
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // arunca ce a ramas în buffer
+                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << rewards.size()-1 << ": "<<std:: endl;
+                continue;
+            }
+            if (idx >= 0 && idx < static_cast<int>(rewards.size())) {
+                break; // index corect, ieșim din while
+            }
+            else {
+                std::cout << "Index invalid! Introdu un numar intre 0 si " << rewards.size()-1 << ": "<<std:: endl;
+            }
+        }
+        if (rewards[idx].isInvincible())
+        {
+            isInvincible=true;
+            Logger :: logEvent("Esti Invincibil, poti sa mananci ce peste vrei tu, fara sa mori pentru o tura!");
+            chooseFishToAttack();
+            aquarium.removeReward(idx);
+        }
+
+
+
+
+
+
+    }
+    void ChooseAction()
+    {
+        const auto& fishes=aquarium.getFishies();
+        const auto& rewards = aquarium.getRewards();
+        if (!rewards.empty())
+        {
+            std::cout<<"Alege actiunea pe care vrei sa o faci: "<<std:: endl;
+            std::cout<<"1.Ataca un peste"<<std:: endl;
+            std::cout<<"2.Revendica o recompensa"<<std:: endl;
+            int idx;
+            while (true) {
+                std::cin >> idx;
+                if (std::cin.fail()) {
+                    std::cin.clear(); // sterge starea de eroare
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // arunca ce a ramas în buffer
+                    std::cout << "Input invalid! Te rog alege 1 sau 2"<<std:: endl;
+                    continue;
+                }
+                if (idx==1 || idx==2) {
+                    break; // index corect, ieșim din while
+                }
+                else {
+                    std::cout << "Valoare invalida! Alege  1 sau 2"<<std:: endl;
+                }
+            }
+            if (idx==1)
+            {
+                chooseFishToAttack();
+            }
+            else if (idx==2)
+            {
+                chooseReward();
+            }
+        }
+        else
+        {
+            chooseFishToAttack();
+        }
+    }
 };
 
 int main() {
     Fish playerFish("Sharkey", 1, 0, 10);
     Objective goal(1000);
     Game game(playerFish, goal);
+
 
     std::cout << "Alege nivelul de dificultate(Threat Level):\n";
     std::cout << "1. Sunrise (easy)\n";
@@ -375,40 +551,16 @@ int main() {
 
     game.setThreatLevel(level);
 
+    std::thread rewardThread(Game :: rewardSpawnerThread, std::ref(game));
+    rewardThread.detach(); // ruleaza in fundal
+
     game.spawnFish(5, playerFish, level);
     game.displayState();
 
     while (!game.isObjectiveMet()) {
-        game.chooseFishToAttack();
-        std :: cout << "Vrei sa vezi pestii ramasi in acvariu?(y/n)"
-        << std::endl;
-        char answ;
-        std::cin >> answ;
-        int ok=1;
-        while (ok==1)
-        {
-            switch (answ)
-            {
-                case 'y':
-                {
-                    game.displayState();
-                    ok=0;
-                    break;
-                }
-                case 'n':
-                {
-                    ok=0;
-                    break;
-                }
-                default:
-                {
-                    std::cout<<"ai introdus o valoare gresita, te rog reincearca:";
-                    std::cin >> answ;
-                    break;
-                }
-            }
-        }
 
+
+        game.ChooseAction();
         game.continuespawnfish(level, playerFish);//ca sa am constant pestisori mici in acvariu
 
 
@@ -422,7 +574,7 @@ int main() {
     ////cum sa functioneze-- pe nivele, depinde de ce threat alegi--- threat mic, putin pesti mari-- threat mare-- multi pesti mari- dar in orice caz trb sa exisre--ideea de baza check-poate fii elaborata in sensul ca ar trebui spawnati recurent pesti
     /////nr minim de pesti mici ca sa poti sa castigi
     ///
-    /////la un anumit interval de timp se spawneazaa pestisior mai mici constant
+    /////la un anumit interval de timp se spawneazaa pestisior mai mici constant--check- nu e la un interval de timp, ci dupa fiecare tura in fct de threatlevel
     //////poate mi-ar fi mai usor daca ar exista valori implicite la marimi-adica 6 marimi de pesti
     ///
     ////si pestele incepe constant la o anumita dimensiune
@@ -431,4 +583,6 @@ int main() {
     //////in momentul cand ma aproprii  de un peste mare, pestele mare sa incerce sa ma manance
     ///
     /////cd evolueaza sa manance reptile si pesti
+    ///
+    /////pot sa adaug rewards
 }
