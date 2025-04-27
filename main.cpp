@@ -302,7 +302,7 @@ public:
             } else {
                 Logger::logEvent(player.getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
                 stop(); // o metodă care setează running = false
-                exit(0);
+                return;
             }
         }
         else{
@@ -530,6 +530,7 @@ public:
     void stop() {
         running = false;
     }
+    bool isRunning() const { return running; }
 };
 
 int main() {
@@ -560,7 +561,7 @@ int main() {
     game.spawnFish(5, playerFish, level);
     game.displayState();
 
-    while (!game.isObjectiveMet()) {
+    while (!game.isObjectiveMet() && game.isRunning()) {
 
 
         game.ChooseAction();
@@ -572,7 +573,11 @@ int main() {
     if (rewardThread.joinable()) {
         rewardThread.join();
     }
-    std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
+    if (game.isObjectiveMet()) {
+        std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
+    } else {
+        std::cout << "Jocul s-a terminat!" << std::endl;
+    }
     return 0;
 
     ///trb sa elimin pestele mancat --check .
