@@ -218,6 +218,7 @@ private:
     int score;
     ThreatLevel threatLevel;
     bool isInvincible=false;
+    bool running = true;
 
 
 public:
@@ -300,6 +301,7 @@ public:
 
             } else {
                 Logger::logEvent(player.getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
+                stop(); // o metodă care setează running = false
                 exit(0);
             }
         }
@@ -438,7 +440,7 @@ public:
         aquarium.addReward(reward);
     }
     void rewardSpawnerThread() {
-        while (true) {
+        while (running) {
             std::this_thread::sleep_for(std::chrono::seconds(30)); // asteapta 1 minut
             RandomReward(); // spawnez reward-ul
             Logger :: logEvent( " O recompensa de invincibilitate a aparut din neant!");
@@ -525,6 +527,9 @@ public:
             chooseFishToAttack();
         }
     }
+    void stop() {
+        running = false;
+    }
 };
 
 int main() {
@@ -551,7 +556,6 @@ int main() {
     game.setThreatLevel(level);
 
     std::thread rewardThread(&Game::rewardSpawnerThread, &game);
-    rewardThread.detach(); // ruleaza in fundal
 
     game.spawnFish(5, playerFish, level);
     game.displayState();
@@ -564,7 +568,10 @@ int main() {
 
 
     }
-
+    game.stop(); // o metodă care setează running = false
+    if (rewardThread.joinable()) {
+        rewardThread.join();
+    }
     std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
     return 0;
 
