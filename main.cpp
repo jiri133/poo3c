@@ -215,7 +215,7 @@ public:
         threatLevel = level;
     }
 
-    void spawnFish(const int num, const Fish& playerFish, const ThreatLevel& threatLevel) {
+    void spawnFish(const int num, const Fish& playerFish, const ThreatLevel& Level) {//pun alt nume la Level si nu pun threatLevel ca sa nu mi mai dea eroare
         static std::random_device rd;
         static std::mt19937 gen(rd());
         std::uniform_int_distribution<> distrib(playerFish.getSize() + 1, 6);
@@ -227,38 +227,27 @@ public:
             aquarium.addFish(newFish);
             i++;
         }
-        switch (threatLevel)
+        int numfishspawn = 0;
+        switch (Level)
         {
             case ThreatLevel::Sunrise:
-                for ( i = 0; i < 10; ++i) {
-                    int randomSize = distrib(gen);
-                    int randomSpeed = randomSize;
-                    Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
-                    aquarium.addFish(newFish);
-                }
+               numfishspawn = 10;
                 break;
             case ThreatLevel::Noon:
-                for ( i = 0; i < 20; ++i)
-                {
-                    int randomSize = distrib(gen);
-                    int randomSpeed = randomSize;
-                    Fish newFish("Fish" + std::to_string(i) + std::to_string(i+randomSize), randomSize, randomSpeed);
-                    aquarium.addFish(newFish);
-
-                }
+               numfishspawn = 20;
                 break;
              case ThreatLevel::Midnight:
-                 for ( i = 0; i < 30; ++i)
-                 {
-                     int randomSize = distrib(gen);
-                     int randomSpeed = randomSize;
-                     Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
-                     aquarium.addFish(newFish);
-                 }
+                 numfishspawn = 30;
                 break;
             default:
                 std :: cout<<"ThreatLevel is invalid";
 
+        }
+        for ( i = 0; i < numfishspawn; ++i) {
+            int randomSize = distrib(gen);
+            int randomSpeed = randomSize;
+            Fish newFish("Fish" + std::to_string(i), randomSize, randomSpeed);
+            aquarium.addFish(newFish);
         }
     }
 
