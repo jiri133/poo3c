@@ -308,7 +308,7 @@ public:
 
         std::cout << "Alege indexul unui peste de atacat: ";
         int idx;
-        int okk=1;
+
 
         while (true) {
             std::cin >> idx;
