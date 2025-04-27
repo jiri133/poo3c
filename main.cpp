@@ -489,7 +489,6 @@ public:
     }
     void ChooseAction()
     {
-        const auto& fishes=aquarium.getFishies();
         const auto& rewards = aquarium.getRewards();
         if (!rewards.empty())
         {
