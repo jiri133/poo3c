@@ -271,7 +271,7 @@ public:
         }
     }
 
-    void continuespawnfish( const ThreatLevel& level,  Fish& playerFish)
+    void continuespawnfish( const ThreatLevel& level, const Fish& playerFish)
     {
         static std::random_device rd;
         static std::mt19937 gen(rd());
