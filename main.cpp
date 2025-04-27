@@ -49,17 +49,17 @@ public:
     }
 
     void grow() {
-        size += 1;
-        speed += 1;
+        size =size+ 1;
+        speed += 10;
     }
 
     void evolve() {
-        if (size > 350) {
+        if (size > 6) {
             name = "Reptila REMO";
             speed += 20;
             Logger::logEvent("Jucatorul a evoluat in Reptila!");
         }
-        if (size > 500) {
+        if (size > 11) {
             name = "Amfibianul.";
             speed += 30;
             Logger::logEvent("Jucatorul a evoluat in Amfibian hihi!");
@@ -109,7 +109,7 @@ public:
 class Aquarium {
     std::vector<Fish> fishies;
     std::vector<Reward> rewards;
-    std::vector<int> size = {0, 1, 2, 3, 4, 5, 6};
+    std::vector<int> size = {0, 1, 2, 3, 4, 5, 6,7,8,9,10,11,12};
 
 public:
     Aquarium() = default;//ptr ca am alti constr
@@ -169,8 +169,8 @@ public:
 
     ~Objective() {}
 
-    bool checkGoalReached(const int currentScore) const {
-        return currentScore >= goal;
+    bool checkGoalReached(const int currentScore,const Fish& playerFish) const {
+        return currentScore >= goal || playerFish.getSize() >= 12 ;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Objective& obj) {
@@ -254,11 +254,11 @@ public:
     void playTurn(const Fish& targetFish) {
         if (player.canEat(targetFish)) {
             if (targetFish.getSize() < player.getSize()) {
-                score += 5;
+                score += 20;
             } else {
-                score += 10;
+                score += 50;
             }
-            if (score % 200 == 0)
+            if (score % 100 == 0)
                 player.grow();
 
             player.evolve();
@@ -308,7 +308,24 @@ public:
 
         std::cout << "Alege indexul unui peste de atacat: ";
         int idx;
-        std::cin >> idx;
+        int okk=1;
+
+        while (true) {
+            std::cin >> idx;
+            if (std::cin.fail()) {
+                std::cin.clear(); // sterge starea de eroare
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // arunca ce a ramas în buffer
+                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << fishes.size()-1 << ": ";
+                continue;
+            }
+            if (idx >= 0 && idx < static_cast<int>(fishes.size())) {
+                break; // index corect, ieșim din while
+            }
+            else {
+                std::cout << "Index invalid! Introdu un numar intre 0 si " << fishes.size()-1 << ": ";
+            }
+        }
+
 
         if (idx >= 0 && idx < static_cast<int>(fishes.size())) {
 
@@ -332,13 +349,13 @@ public:
     }
 
     bool isObjectiveMet() const {
-        return objective.checkGoalReached(score);
+        return objective.checkGoalReached(score,player);
     }
 };
 
 int main() {
     Fish playerFish("Sharkey", 1, 0, 10);
-    Objective goal(50);
+    Objective goal(1000);
     Game game(playerFish, goal);
 
     std::cout << "Alege nivelul de dificultate(Threat Level):\n";
@@ -367,10 +384,31 @@ int main() {
         << std::endl;
         char answ;
         std::cin >> answ;
-        if (answ == 'y')
+        int ok=1;
+        while (ok==1)
         {
-            game.displayState();
+            switch (answ)
+            {
+                case 'y':
+                {
+                    game.displayState();
+                    ok=0;
+                    break;
+                }
+                case 'n':
+                {
+                    ok=0;
+                    break;
+                }
+                default:
+                {
+                    std::cout<<"ai introdus o valoare gresita, te rog reincearca:";
+                    std::cin >> answ;
+                    break;
+                }
+            }
         }
+
         game.continuespawnfish(level, playerFish);//ca sa am constant pestisori mici in acvariu
 
 
@@ -389,6 +427,8 @@ int main() {
     ///
     ////si pestele incepe constant la o anumita dimensiune
     ///////adaptare pe threat level cati se spawneza
-    ///
+    ///de cizelat faza cu reptilele
     //////in momentul cand ma aproprii  de un peste mare, pestele mare sa incerce sa ma manance
+    ///
+    /////cd evolueaza sa manance reptile si pesti
 }
