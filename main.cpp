@@ -85,7 +85,7 @@ class Reward {
     int turns;
 
 public:
-     Reward(const std::string& type, int value = 1,int turns = 1)
+     explicit Reward(const std::string& type, int value = 1,int turns = 1)
         : type(type), value(value), turns(turns) {}
 
     explicit Reward(const Reward& r)
