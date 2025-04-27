@@ -271,6 +271,37 @@ public:
         }
     }
 
+    void continuespawnfish( const ThreatLevel& level,  Fish& playerFish)
+    {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distrib(0,playerFish.getSize()-1);
+        int num=0;
+
+        switch (level)
+        {
+            case(ThreatLevel::Sunrise):
+                num=3;
+                break;
+            case(ThreatLevel::Noon):
+                num=2;
+                break;
+            case(ThreatLevel::Midnight):
+                num=1;
+                break;
+            default:
+                num=0;
+
+        }
+        for (int i = 0; i < num; ++i)
+        {
+            int randomsize=distrib(gen);
+            Fish newFish("Fish" + std::to_string(distrib(gen)%3+distrib(gen)),randomsize,randomsize+1);
+            aquarium.addFish(newFish);
+
+        }
+    }
+
     void chooseFishToAttack() {
         const auto& fishes = aquarium.getFishies();
 
@@ -340,6 +371,7 @@ int main() {
         {
             game.displayState();
         }
+        game.continuespawnfish(level, playerFish);//ca sa am constant pestisori mici in acvariu
 
 
     }
