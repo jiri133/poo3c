@@ -595,6 +595,7 @@ int main() {
     Game game(playerFish, goal);
 
 
+
     std::cout << "Alege nivelul de dificultate(Threat Level):\n";
     std::cout << "1. Sunrise (easy)\n";
     std::cout << "2. Noon (medium)\n";
