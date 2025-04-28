@@ -440,16 +440,10 @@ public:
         aquarium.addReward(reward);
     }
     void rewardSpawnerThread() {
-        static int counter = 0;
         while (running) {
-            std::this_thread::sleep_for(std::chrono::seconds(1)); // asteapta 1 sec
-            counter++;
-            if (counter == 30)
-            {
-                RandomReward(); // spawnez reward-ul
-                Logger :: logEvent( " O recompensa a aparut din neant!");
-                counter = 0;
-            }
+            std::this_thread::sleep_for(std::chrono::seconds(30)); // asteapta 1 minut
+            RandomReward(); // spawnez reward-ul
+            Logger :: logEvent( " O recompensa de invincibilitate a aparut din neant!");
         }
     }
 
