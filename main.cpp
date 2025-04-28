@@ -105,6 +105,10 @@ public:
         return type == "Invincible";//daca e invincibil poate sa manance ce peste vrea ptr o tura
 
     }
+    bool isDoublePoints()const
+     {
+         return type == "DoublePoints";//manaci un peste si primesti scor dublu
+     }
     ~Reward() {}
 
     friend std::ostream& operator<<(std::ostream& os, const Reward& r) {
@@ -219,6 +223,7 @@ private:
     ThreatLevel threatLevel;
     bool isInvincible=false;
     bool running = true;
+    bool isDoublePoints=false;
 
 
 public:
@@ -227,7 +232,7 @@ public:
         : player(player), objective(obj), score(0), threatLevel(ThreatLevel::Sunrise),isInvincible(false){}
 
     Game(const Game& g)
-        : player(g.player), aquarium(g.aquarium), objective(g.objective), score(g.score), threatLevel(g.threatLevel),isInvincible(g.isInvincible) {}
+        : player(g.player), aquarium(g.aquarium), objective(g.objective), score(g.score), threatLevel(g.threatLevel),isInvincible(g.isInvincible),isDoublePoints(g.isDoublePoints) {}
 
     Game& operator=(const Game& g) {
         if (this != &g) {
@@ -237,6 +242,7 @@ public:
             score = g.score;
             threatLevel = g.threatLevel;
             isInvincible = g.isInvincible;
+            isDoublePoints = g.isDoublePoints;
         }
         return *this;
     }
@@ -285,7 +291,7 @@ public:
 
     void playTurn(const Fish& targetFish)
     {
-        if (isInvincible==false) {
+        if (activerewards()==false) {
             if (player.canEat(targetFish)) {
                 if (targetFish.getSize() < player.getSize()) {
                     score += 20;
@@ -305,18 +311,45 @@ public:
                 return;
             }
         }
-        else{
-            score+=50;
-            if (score % 100 == 0)
-                player.grow();
+        else
+        {
+            if (isInvincible)
+            {
+                score+=50;
+                if (score % 100 == 0)
+                    player.grow();
 
-            player.evolve();
+                player.evolve();
 
-            Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
+                Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
+            }
+            if (isDoublePoints)
+            {
+                if (player.canEat(targetFish)) {
+                    if (targetFish.getSize() < player.getSize()) {
+                        score += 40;
+                    } else {
+                        score += 100;
+                    }
+                    if (score % 100 == 0)
+                        player.grow();
 
+                    player.evolve();
+
+                    Logger::logEvent("DOUBLEPOINTS! AI PRIMIT DUBLU DE PUNCTE PENTRU ACEST PESTISOR!");
+                    Logger::logEvent(player.getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
+
+
+                }
+                else {
+                    Logger::logEvent(player.getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
+                    stop(); // o metodă care setează running = false
+                    return;
+
+                }
+            }
         }
     }
-
     void continuespawnfish( const ThreatLevel& level, const Fish& playerFish)
     {
         static std::random_device rd;
@@ -436,14 +469,21 @@ public:
 
     void RandomReward()
     {
-        Reward reward("Invincible",2,1);
-        aquarium.addReward(reward);
+        std::vector<Reward> rewardz;
+        rewardz.push_back(Reward("Invincible",2,1));
+        rewardz.push_back(Reward("DoublePoints",2,1));
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<> distrib(0,static_cast<int>(rewardz.size())-1);
+
+        int idx=distrib(gen);
+        aquarium.addReward(rewardz[idx]);
     }
     void rewardSpawnerThread() {
         while (running) {
             std::this_thread::sleep_for(std::chrono::seconds(30)); // asteapta 1 minut
             RandomReward(); // spawnez reward-ul
-            Logger :: logEvent( " O recompensa de invincibilitate a aparut din neant!");
+            Logger :: logEvent( " O recompensa  a aparut din neant!");
         }
     }
 
@@ -475,6 +515,7 @@ public:
                 std::cout << "Index invalid! Introdu un numar intre 0 si " << rewards.size()-1 << ": "<<std:: endl;
             }
         }
+
         if (rewards[idx].isInvincible())
         {
             isInvincible=true;
@@ -482,6 +523,17 @@ public:
             chooseFishToAttack();
             aquarium.removeReward(idx);
         }
+        if (rewards[idx].isDoublePoints())
+        {
+            isDoublePoints=true;
+            Logger :: logEvent("LA FIECARE PESTE MANCAT, PRIMESTI DOUBLEPOINTS! DUREAZA PUTIN ASA CA MANANCA CAT MAI MULTI!");
+            chooseFishToAttack();
+            isDoublePoints=false;
+
+            aquarium.removeReward(idx);
+
+        }
+
 
 
 
@@ -531,12 +583,17 @@ public:
         running = false;
     }
     bool isRunning() const { return running; }
+    bool activerewards() const
+    {
+        return isInvincible || isDoublePoints;
+    }
 };
 
 int main() {
     Fish playerFish("Sharkey", 1, 0, 10);
-    Objective goal(1000);
+    Objective goal(500);
     Game game(playerFish, goal);
+
 
 
     std::cout << "Alege nivelul de dificultate(Threat Level):\n";
@@ -596,4 +653,6 @@ int main() {
     /////cd evolueaza sa manance reptile si pesti
     ///
     /////pot sa adaug rewards
+    ///
+    /////sa pun isDoubllePoints cu timer
 }
