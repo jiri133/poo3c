@@ -657,13 +657,13 @@ public:
     void ChooseAction()
     {
         const auto &rewards = aquarium.getRewards();
-        if (sizeof(rewards) != 0)
-        {
-            for (auto&  reward: rewards)
-            {
-                std::cout<< typeid(*reward).name()<< std::endl;
-            }
-        }
+        // if (sizeof(rewards) != 0)
+        // {
+        //     for ( const auto&  reward: rewards)
+        //     {
+        //         std::cout<< typeid(*reward).name()<< std::endl;
+        //     }
+        // } sa verific ca mi da bine type
         if (!rewards.empty())
         {
             std::cout << "Alege actiunea pe care vrei sa o faci: " << std::endl;
