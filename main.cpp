@@ -587,6 +587,7 @@ public:
             if (rewardCV.wait_for(lock, std::chrono::seconds(1), [this] { return !running; }))
             {
                 // If we're here because running is false, break the loop
+                running=false;
                 break;
             }
 
