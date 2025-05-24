@@ -143,6 +143,7 @@ public:
    virtual bool func() const
     {
         std :: cout << "Reward de niciun tip";
+        return true;
     }
     virtual std::string getType() const
     { return type; }
