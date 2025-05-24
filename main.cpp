@@ -140,13 +140,7 @@ public:
         os << "Reward(" << r.type << ", Value: " << r.value << ", Turns: " << r.turns << ")" << std::endl;;
         return os;
     }
-   virtual bool func() const
-    {
-        std :: cout << "Reward de niciun tip";
-        return true;
-    }
-    virtual std::string getType() const
-    { return type; }
+
 
 };
 
@@ -155,14 +149,8 @@ class Invincible : public Reward
 public:
     Invincible(){};
     using Reward::Reward;//inherits the constructors from rewards
-    bool func() const override
-    {
-        return type == "Invincible"; //daca e invincibil poate sa manance ce peste vrea ptr o tura}
-    }
-    std::string getType() const override
-    {
-        return "Invincible";
-    }
+
+
 };
 
 class isDoublePoints : public Reward
@@ -170,14 +158,8 @@ class isDoublePoints : public Reward
 public:
     isDoublePoints(){};
     using Reward::Reward;
-    bool func() const override
-    {
-        return type == "isDoublePoints"; //manaci un peste si primesti scor dublu
-    }
-    std::string getType() const override
-    {
-        return "isDoublePoints";
-    }
+
+
 };
 
 // Clasa Aquarium
@@ -676,7 +658,7 @@ public:
         const auto &rewards = aquarium.getRewards();
         if (sizeof(rewards) != 0)
         {
-            for (auto& reward: rewards)
+            for (auto&  reward: rewards)
             {
                 std::cout<< typeid(*reward).name()<< std::endl;
             }
