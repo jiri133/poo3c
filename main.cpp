@@ -142,11 +142,15 @@ public:
         os << "Reward(" << r.type << ", Value: " << r.value << ", Turns: " << r.turns << ")" << std::endl;;
         return os;
     }
-    virtual bool func() const
+    virtual bool isInvincible() const//daca o comentez typeid functioneaaza diferit ptr ca nu mai am polimorfism
     {
-        std :: cout << "Reward de niciun tip";
-        return true;
+
+        return false;
     }
+    virtual bool DoublePoints() const//daca o comentez typeid functioneaaza diferit ptr ca nu mai am polimorfism
+   {
+        return false;
+   }
 
 
 };
@@ -156,9 +160,9 @@ class Invincible : public Reward
 public:
     Invincible(){};
     using Reward::Reward;//inherits the constructors from rewards
-    bool func() const override
+    bool isInvincible() const override
     {
-        return type == "Invincible"; //daca e invincibil poate sa manance ce peste vrea ptr o tura}
+        return true; //daca e invincibil poate sa manance ce peste vrea ptr o tura}
     }
 
 
@@ -169,9 +173,9 @@ class isDoublePoints : public Reward
 public:
     isDoublePoints(){};
     using Reward::Reward;
-    bool func() const override
+    bool DoublePoints() const override
     {
-        return type == "isDoublePoints"; //manaci un peste si primesti scor dublu
+        return true; //manaci un peste si primesti scor dublu
     }
 
 
@@ -656,14 +660,14 @@ public:
             }
         }
 
-        if (typeid(*rewards[idx]) == typeid(Invincible))
+        if (rewards[idx]->isInvincible())
         {
             isInvincible = true;
             Logger::logEvent("Esti Invincibil, poti sa mananci ce peste vrei tu, fara sa mori pentru o tura!");
             chooseFishToAttack();
             aquarium.removeReward(idx);
         }
-        if (typeid(*rewards[idx]) == typeid(::isDoublePoints))
+        if (rewards[idx]->DoublePoints())
         {
             isDoublePoints = true;
             Logger::logEvent(
