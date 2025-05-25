@@ -592,25 +592,31 @@ public:
         aquarium.addReward(rewardz[idx]);
     }
 
+
     void rewardSpawnerThread()
     {
         int counter = 0;
-        std::unique_lock<std::mutex> lock(rewardMutex);
-        while (running)
+        while (true)
         {
+            std::unique_lock<std::mutex> lock(rewardMutex);
+
             // Wait for 1 second or until game stops
             if (rewardCV.wait_for(lock, std::chrono::seconds(1), [this] { return !running; }))
             {
                 // If we're here because running is false, break the loop
+                break;
+            }
 
+            // Check running status after wait (in case of spurious wakeup)
+            if (!running) {
                 break;
             }
 
             counter++;
             if (counter == 10)
             {
-                RandomReward(); // spawnez reward-ul
-                Logger::logEvent(" O recompensa  a aparut din neant!");
+                RandomReward(); // spawn reward
+                Logger::logEvent(" O recompensa a aparut din neant!");
                 counter = 0;
             }
         }
@@ -720,7 +726,8 @@ public:
     }
 
     void stop()
-    { {
+    {
+        {
             std::lock_guard<std::mutex> lock(rewardMutex);
             running = false;
         }
