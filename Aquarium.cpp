@@ -78,4 +78,6 @@
             rewards.erase(rewards.begin() + index);
         }
     }
+    Aquarium::~Aquarium(){}
+
 
