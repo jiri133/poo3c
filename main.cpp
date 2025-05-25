@@ -7,6 +7,8 @@
 #include <chrono>
 #include <mutex>
 #include <condition_variable>
+#include <limits>
+
 
 // Logger - fara modificari necesare
 class Logger
@@ -140,6 +142,11 @@ public:
         os << "Reward(" << r.type << ", Value: " << r.value << ", Turns: " << r.turns << ")" << std::endl;;
         return os;
     }
+    virtual bool func() const
+    {
+        std :: cout << "Reward de niciun tip";
+        return true;
+    }
 
 
 };
@@ -149,6 +156,10 @@ class Invincible : public Reward
 public:
     Invincible(){};
     using Reward::Reward;//inherits the constructors from rewards
+    bool func() const override
+    {
+        return type == "Invincible"; //daca e invincibil poate sa manance ce peste vrea ptr o tura}
+    }
 
 
 };
@@ -158,6 +169,10 @@ class isDoublePoints : public Reward
 public:
     isDoublePoints(){};
     using Reward::Reward;
+    bool func() const override
+    {
+        return type == "isDoublePoints"; //manaci un peste si primesti scor dublu
+    }
 
 
 };
@@ -587,7 +602,7 @@ public:
             if (rewardCV.wait_for(lock, std::chrono::seconds(1), [this] { return !running; }))
             {
                 // If we're here because running is false, break the loop
-                running=false;
+
                 break;
             }
 
@@ -692,11 +707,13 @@ public:
             if (idx == 1)
             {
                 chooseFishToAttack();
-            } else if (idx == 2)
+            }
+            else if (idx == 2)
             {
                 chooseReward();
             }
-        } else
+        }
+        else
         {
             chooseFishToAttack();
         }
