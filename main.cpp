@@ -8,7 +8,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <limits>
-#pragma once
 #include "Fish.h"
 #include "Logger.h"
 #include "Reward.h"
