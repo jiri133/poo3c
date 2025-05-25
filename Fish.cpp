@@ -2,7 +2,7 @@
 #include "Fish.h"
 #include "Logger.h"
 
-    Fish::Fish(const std::string &name, int size, int speed, int growthFactor = 1)
+    Fish::Fish(const std::string &name, int size, int speed, int growthFactor )
         : name(name), size(size), speed(speed), growthFactor(growthFactor)
     {
     }

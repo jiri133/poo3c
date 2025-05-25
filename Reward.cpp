@@ -50,7 +50,7 @@
 
 
 
-    bool Invincible::isInvincible() const override
+    bool Invincible::isInvincible() const
     {
         return true; //daca e invincibil poate sa manance ce peste vrea ptr o tura}
     }
@@ -59,7 +59,7 @@
 
 
 
-    bool isDoublePoints::DoublePoints() const override
+    bool isDoublePoints::DoublePoints() const
     {
         return true; //manaci un peste si primesti scor dublu
     }
