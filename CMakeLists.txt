@@ -59,6 +59,11 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         Reward.h
         Aquarium.cpp
         Aquarium.h
+        Objective.cpp
+        Objective.h
+        Game.cpp
+        Game.h
+        ThreatLevel.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

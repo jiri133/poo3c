@@ -5,6 +5,7 @@
 #ifndef REWARD_H
 #define REWARD_H
 #include <string>
+#pragma once
 
 
 class Reward
