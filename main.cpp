@@ -7,257 +7,16 @@
 #include <chrono>
 #include <mutex>
 #include <condition_variable>
+#include <limits>
+#pragma once
+#include "Fish.h"
+#include "Logger.h"
+#include "Reward.h"
+#include "Aquarium.h"
 
-// Logger - fara modificari necesare
-class Logger
-{
-public:
-    static void logEvent(const std::string &msg)
-    {
-        std::cout << "[LOG] " << msg << std::endl;
-    }
-};
-
-// Clasa Fish
-class Fish
-{
-    std::string name;
-    int size;
-    int speed;
-    int growthFactor;
-
-public:
-    // Constructor cu parametri
-    Fish(const std::string &name, int size, int speed, int growthFactor = 1)
-        : name(name), size(size), speed(speed), growthFactor(growthFactor)
-    {
-    }
-
-    // Constructor de copiere
-    Fish(const Fish &f)
-        : name(f.name), size(f.size), speed(f.speed), growthFactor(f.growthFactor)
-    {
-    }
-
-    // Operator= de copiere
-    Fish &operator=(const Fish &other)
-    {
-        if (this != &other)
-        {
-            name = other.name;
-            size = other.size;
-            speed = other.speed;
-            growthFactor = other.growthFactor;
-        }
-        return *this;
-    }
-
-    // Destructor
-    ~Fish()
-    {
-    }
-
-    // Metode
-    bool canEat(const Fish &other) const
-    {
-        return size > other.size;
-    }
-
-    void grow()
-    {
-        size = size + 1;
-        speed += 10;
-    }
-
-    void evolve()
-    {
-        if (size > 6)
-        {
-            name = "Reptila REMO";
-            speed += 20;
-            Logger::logEvent("Jucatorul a evoluat in Reptila!");
-        }
-        if (size > 11)
-        {
-            name = "Amfibianul.";
-            speed += 30;
-            Logger::logEvent("Jucatorul a evoluat in Amfibian hihi!");
-        }
-    }
-
-    const std::string &getName() const { return name; }
-
-    friend std::ostream &operator<<(std::ostream &os, const Fish &f)
-    {
-        os << "Fish(" << f.name << ", Size: " << f.size << ", Speed: " << f.speed << ")";
-        return os;
-    }
-
-    int getSize() const { return size; }
-    // int getSpeed() const { return speed; }
-};
-
-// Clasa Rewards
-class Reward
-{
-
-
-protected:
-    std::string type;
-    int value;
-    int turns;
-
-public:
-    Reward(){};
-    explicit Reward(const std::string &type, int value = 1, int turns = 1)
-        : type(type), value(value), turns(turns)
-    {
-    }
-
-    explicit Reward(const Reward &r)
-        : type(r.type), value(r.value), turns(r.turns)
-    {
-    }
-
-    Reward &operator=(const Reward &r)
-    {
-        if (this != &r)
-        {
-            type = r.type;
-            value = r.value;
-            turns = r.turns;
-        }
-        return *this;
-    }
-
-
-    ~Reward()
-    {
-    }
-
-    friend std::ostream &operator<<(std::ostream &os, const Reward &r)
-    {
-        os << "Reward(" << r.type << ", Value: " << r.value << ", Turns: " << r.turns << ")" << std::endl;;
-        return os;
-    }
-   virtual bool func() const
-    {
-        std :: cout << "Reward de niciun tip";
-    }
-    virtual std::string getType() const
-    { return type; }
-
-};
-
-class Invincible : public Reward
-{
-public:
-    Invincible(){};
-    using Reward::Reward;//inherits the constructors from rewards
-    bool func() const override
-    {
-        return type == "Invincible"; //daca e invincibil poate sa manance ce peste vrea ptr o tura}
-    }
-    std::string getType() const override
-    {
-        return "Invincible";
-    }
-};
-
-class isDoublePoints : public Reward
-{
-public:
-    isDoublePoints(){};
-    using Reward::Reward;
-    bool func() const override
-    {
-        return type == "isDoublePoints"; //manaci un peste si primesti scor dublu
-    }
-    std::string getType() const override
-    {
-        return "isDoublePoints";
-    }
-};
 
 // Clasa Aquarium
-class Aquarium
-{
-    std::vector<Fish> fishies;
-    std::vector<std::shared_ptr <Reward>> rewards;
-    std::vector<int> size = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
 
-public:
-    Aquarium() = default; //ptr ca am alti constr
-
-
-    explicit Aquarium(const Aquarium &a)
-        : fishies(a.fishies), rewards(a.rewards)
-    {
-    }
-
-    Aquarium &operator=(const Aquarium &other)
-    {
-        if (this != &other)
-        {
-            fishies = other.fishies;
-            rewards = other.rewards;
-        }
-        return *this;
-    }
-
-
-    ~Aquarium()
-    {
-    }
-
-
-    void addFish(const Fish &fish) { fishies.push_back(fish); }
-    const std::vector<Fish> &getFishies() const { return fishies; }
-
-    void removeFish(int index)
-    {
-        if (index >= 0 && index < static_cast<int>(fishies.size()))
-        {
-            fishies.erase(fishies.begin() + index);
-        }
-    }
-
-    friend std::ostream &operator<<(std::ostream &os, const Aquarium &aquarium)
-    {
-        os << "Acvariul contine urmatorii pesti:\n";
-        const auto &fishList = aquarium.getFishies(); // Accesam lista de pesti
-        if (fishList.empty())
-        {
-            os << "Nu exista pesti in acvariu.\n";
-        } else
-        {
-            int cnt = 0;
-            for (const auto &fish: fishList)
-            {
-                os << cnt << '.' << fish << std::endl;
-                // Afișăm fiecare pește folosind operatorul << definit pentru Fish
-                ++cnt;
-            }
-        }
-        return os;
-    }
-
-
-    void addReward( std::shared_ptr<Reward> &r)
-    {
-        rewards.push_back(r);
-    }
-
-     std::vector<std::shared_ptr<Reward>> &getRewards()  { return rewards; }
-
-    void removeReward(int index)
-    {
-        if (index >= 0 && index < static_cast<int>(rewards.size()))
-        {
-            rewards.erase(rewards.begin() + index);
-        }
-    }
-};
 
 // Clasa Objective
 class Objective
@@ -594,12 +353,14 @@ public:
         aquarium.addReward(rewardz[idx]);
     }
 
+
     void rewardSpawnerThread()
     {
         int counter = 0;
-        std::unique_lock<std::mutex> lock(rewardMutex);
-        while (running)
+        while (true)
         {
+            std::unique_lock<std::mutex> lock(rewardMutex);
+
             // Wait for 1 second or until game stops
             if (rewardCV.wait_for(lock, std::chrono::seconds(1), [this] { return !running; }))
             {
@@ -607,11 +368,16 @@ public:
                 break;
             }
 
+            // Check running status after wait (in case of spurious wakeup)
+            if (!running) {
+                break;
+            }
+
             counter++;
             if (counter == 10)
             {
-                RandomReward(); // spawnez reward-ul
-                Logger::logEvent(" O recompensa  a aparut din neant!");
+                RandomReward(); // spawn reward
+                Logger::logEvent(" O recompensa a aparut din neant!");
                 counter = 0;
             }
         }
@@ -651,14 +417,14 @@ public:
             }
         }
 
-        if (typeid(*rewards[idx]) == typeid(Invincible))
+        if (rewards[idx]->isInvincible())
         {
             isInvincible = true;
             Logger::logEvent("Esti Invincibil, poti sa mananci ce peste vrei tu, fara sa mori pentru o tura!");
             chooseFishToAttack();
             aquarium.removeReward(idx);
         }
-        if (typeid(*rewards[idx]) == typeid(::isDoublePoints))
+        if (rewards[idx]->DoublePoints())
         {
             isDoublePoints = true;
             Logger::logEvent(
@@ -673,13 +439,13 @@ public:
     void ChooseAction()
     {
         const auto &rewards = aquarium.getRewards();
-        if (sizeof(rewards) != 0)
-        {
-            for (auto& reward: rewards)
-            {
-                std::cout<< typeid(*reward).name()<< std::endl;
-            }
-        }
+        // if (sizeof(rewards) != 0)
+        // {
+        //     for ( const auto&  reward: rewards)
+        //     {
+        //         std::cout<< typeid(*reward).name()<< std::endl;
+        //     }
+        // } sa verific ca mi da bine type
         if (!rewards.empty())
         {
             std::cout << "Alege actiunea pe care vrei sa o faci: " << std::endl;
@@ -708,18 +474,21 @@ public:
             if (idx == 1)
             {
                 chooseFishToAttack();
-            } else if (idx == 2)
+            }
+            else if (idx == 2)
             {
                 chooseReward();
             }
-        } else
+        }
+        else
         {
             chooseFishToAttack();
         }
     }
 
     void stop()
-    { {
+    {
+        {
             std::lock_guard<std::mutex> lock(rewardMutex);
             running = false;
         }
