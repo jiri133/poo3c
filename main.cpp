@@ -133,9 +133,8 @@ public:
     }
 
 
-    ~Reward()
-    {
-    }
+    virtual ~Reward() =  default;
+
 
     friend std::ostream &operator<<(std::ostream &os, const Reward &r)
     {
