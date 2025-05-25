@@ -8,6 +8,7 @@
 #include <memory>
 #ifndef AQUARIUM_H
 #define AQUARIUM_H
+#pragma once
 
 
 
