@@ -86,7 +86,7 @@ public:
 
     Player(const std::string &name, int size, int speed, int growthFactor = 1): Fish(name, size, speed, growthFactor){}
 
-    ~Player() override;
+    ~Player() override=default;
 
     bool canEat(const Fish &other) const override
     {
