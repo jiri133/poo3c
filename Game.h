@@ -266,13 +266,13 @@ public:
 
         if (idx >= 0 && idx < static_cast<int>(fishlist.size()))
         {
-            if (player->canEat(*fishlist[idx]))
+            if (player->canEat(*fishlist.at(idx)))
             {
-                playTurn(*fishlist[idx]);
+                playTurn(*fishlist.at(idx));
                 aquarium.removeFish(idx);
             } else
             {
-                playTurn(*fishlist[idx]);
+                playTurn(*fishlist.at(idx));
                 if (isInvincible == true)
                 {
                     aquarium.removeFish(idx);
