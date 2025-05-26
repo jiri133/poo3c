@@ -210,7 +210,7 @@ public:
 
     void chooseFishToAttack()
     {
-        const auto &fishies = aquarium.getFishies();
+        const auto &fishList = aquarium.getFishies();
         std::cout << "Vrei sa vezi pestii ramasi in acvariu?(y/n)" << std::endl;
         char answ;
         std::cin >> answ;
@@ -251,30 +251,30 @@ public:
             {
                 std::cin.clear(); // sterge starea de eroare
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // arunca ce a ramas în buffer
-                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << fishies.size() - 1 << ": " <<
+                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << fishList.size() - 1 << ": " <<
                         std::endl;
                 continue;
             }
-            if (idx >= 0 && idx < static_cast<int>(fishies.size()))
+            if (idx >= 0 && idx < static_cast<int>(fishList.size()))
             {
                 break; // index corect, ieșim din while
             } else
             {
-                std::cout << "Index invalid! Introdu un numar intre 0 si " << fishies.size() - 1 << ": " <<
+                std::cout << "Index invalid! Introdu un numar intre 0 si " << fishList.size() - 1 << ": " <<
                         std::endl;
             }
         }
 
 
-        if (idx >= 0 && idx < static_cast<int>(fishies.size()))
+        if (idx >= 0 && idx < static_cast<int>(fishList.size()))
         {
-            if (player->canEat(*fishies[idx]))
+            if (player->canEat(*fishList[idx]))
             {
-                playTurn(*fishies[idx]);
+                playTurn(*fishList[idx]);
                 aquarium.removeFish(idx);
             } else
             {
-                playTurn(*fishies[idx]);
+                playTurn(*fishList[idx]);
                 if (isInvincible == true)
                 {
                     aquarium.removeFish(idx);
