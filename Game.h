@@ -14,6 +14,9 @@
 #include <mutex>
 #include <condition_variable>
 #include "ThreatLevel.h"
+#include "Logger.h"
+#include <random>
+#include <cstdlib>
 
 
 class Game
@@ -462,16 +465,9 @@ public:
 
 
 
-#include "Aquarium.h"
 
-#include "Fish.h"
-#include "Logger.h"
-#include "Objective.h"
-#include <random>
-#include <cstdlib>
-#include <mutex>
-#include <condition_variable>
-#include "ThreatLevel.h"
+
+
 
 
 #endif //GAME_H
