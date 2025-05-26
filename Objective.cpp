@@ -5,6 +5,7 @@
 #include "Objective.h"
 #include <iostream>
 #include "Fish.h"
+#pragma once
 
 
 

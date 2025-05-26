@@ -1,16 +1,11 @@
-//
-// Created by MINALP1 on 5/26/2025.
-//
+
 
 #ifndef GAME_H
 #define GAME_H
 #pragma once
 #include "Aquarium.h"
-
 #include "Fish.h"
-
 #include "Objective.h"
-
 #include <mutex>
 #include <condition_variable>
 #include "ThreatLevel.h"
