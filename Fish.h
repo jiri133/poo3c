@@ -128,6 +128,15 @@ class NPCFish : public Fish
 
 
 };
+class NPCPlayer mic : public NPCFish{
+using NPCFish::NPCFish;
+
+
+public:
+};
+
+class NPCNPCFish mare : public NPCFish{
+using NPCFish::NPCFish;};
 
 
 #endif //FISH_H
