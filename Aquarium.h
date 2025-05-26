@@ -102,12 +102,6 @@ public:
 // Created by MINALP1 on 5/26/2025.
 //
 
-#include "Aquarium.h"
-#include <iostream>
-#include <vector>
-#include "Fish.h"
-#include "Reward.h"
-#include <memory>
 
 
 #endif //AQUARIUM_H
