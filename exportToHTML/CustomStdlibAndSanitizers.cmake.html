@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>CustomStdlibAndSanitizers.cmake</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #ffc66d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #cf8e6d;}
+.s3 { color: #bcbec4;}
+.s4 { color: #7a7e85;}
+.s5 { color: #6aab73;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+CustomStdlibAndSanitizers.cmake</font>
+</center></td></tr></table>
+<pre><span class="s0">include</span><span class="s1">(</span><span class="s2">${</span><span class="s1">CMAKE_CURRENT_LIST_DIR</span><span class="s2">}</span><span class="s1">/DetectLibcpp.cmake)</span>
+
+<span class="s2">function</span><span class="s1">(set_custom_stdlib_and_sanitizers target add_apple_asan)</span>
+    <span class="s2">if</span><span class="s1">(MSVC)</span>
+        <span class="s4"># see https://gitlab.kitware.com/cmake/cmake/-/issues/24922</span>
+        <span class="s0">set_target_properties</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PROPERTIES VS_USER_PROPS </span><span class="s5">&quot;</span><span class="s2">${</span><span class="s1">CMAKE_SOURCE_DIR</span><span class="s2">}</span><span class="s1">/disable_modules.props</span><span class="s5">&quot;</span><span class="s1">)</span>
+        <span class="s0">target_compile_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE /experimental:module-)</span>
+        <span class="s2">if</span><span class="s1">(USE_ASAN)</span>
+            <span class="s0">target_compile_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE </span><span class="s5">&quot;</span><span class="s1">$&lt;</span><span class="s2">${</span><span class="s1">debug_mode</span><span class="s2">}</span><span class="s1">:/fsanitize=address&gt;</span><span class="s5">&quot;</span><span class="s1">)</span>
+        <span class="s2">endif</span><span class="s1">()</span>
+        <span class="s0">return</span><span class="s1">()</span>
+    <span class="s2">endif</span><span class="s1">()</span>
+
+    <span class="s2">if</span><span class="s1">(</span><span class="s5">&quot;</span><span class="s2">${</span><span class="s1">CMAKE_CXX_COMPILER_ID</span><span class="s2">}</span><span class="s5">&quot; </span><span class="s1">MATCHES </span><span class="s5">&quot;</span><span class="s1">Clang</span><span class="s5">&quot; </span><span class="s1">AND NOT WIN32)</span>
+        <span class="s0">detect_libcpp</span><span class="s1">()</span>
+        <span class="s2">if</span><span class="s1">(HAS_LIBCPP)</span>
+            <span class="s4"># see also https://stackoverflow.com/a/70382484</span>
+            <span class="s0">target_compile_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE -stdlib=libc++)</span>
+            <span class="s0">target_link_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE -stdlib=libc++)</span>
+        <span class="s2">else</span><span class="s1">()</span>
+            <span class="s4"># fall back to libstdc++</span>
+            <span class="s0">target_compile_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE -stdlib=libstdc++)</span>
+            <span class="s0">target_link_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE -stdlib=libstdc++)</span>
+        <span class="s2">endif</span><span class="s1">()</span>
+    <span class="s2">endif</span><span class="s1">()</span>
+
+    <span class="s2">if</span><span class="s1">(APPLE)</span>
+        <span class="s4"># first check Apple since Apple is also a kind of Unix</span>
+        <span class="s2">if</span><span class="s1">(</span><span class="s5">&quot;</span><span class="s2">${</span><span class="s1">CMAKE_CXX_COMPILER_ID</span><span class="s2">}</span><span class="s5">&quot; </span><span class="s1">MATCHES </span><span class="s5">&quot;</span><span class="s1">Clang</span><span class="s5">&quot; </span><span class="s1">AND add_apple_asan MATCHES true)</span>
+            <span class="s2">if</span><span class="s1">(USE_ASAN)</span>
+                <span class="s0">target_compile_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE </span><span class="s5">&quot;</span><span class="s1">$&lt;</span><span class="s2">${</span><span class="s1">debug_mode</span><span class="s2">}</span><span class="s1">:-fsanitize=address,undefined&gt;</span><span class="s5">&quot;</span><span class="s1">)</span>
+                <span class="s0">target_link_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE </span><span class="s5">&quot;</span><span class="s1">$&lt;</span><span class="s2">${</span><span class="s1">debug_mode</span><span class="s2">}</span><span class="s1">:-fsanitize=address,undefined&gt;</span><span class="s5">&quot;</span><span class="s1">)</span>
+            <span class="s2">endif</span><span class="s1">()</span>
+        <span class="s2">endif</span><span class="s1">()</span>
+    <span class="s2">elseif</span><span class="s1">(UNIX)</span>
+        <span class="s2">if</span><span class="s1">(USE_ASAN)</span>
+            <span class="s4"># check leaks on Linux since macOS does not support the leaks sanitizer yet</span>
+            <span class="s4"># leaks sanitizer is enabled by default on Linux, so we do not need to enable it explicitly</span>
+            <span class="s0">target_compile_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE </span><span class="s5">&quot;</span><span class="s1">$&lt;</span><span class="s2">${</span><span class="s1">debug_mode</span><span class="s2">}</span><span class="s1">:-fsanitize=address,undefined&gt;</span><span class="s5">&quot;</span><span class="s1">)</span>
+            <span class="s0">target_link_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE </span><span class="s5">&quot;</span><span class="s1">$&lt;</span><span class="s2">${</span><span class="s1">debug_mode</span><span class="s2">}</span><span class="s1">:-fsanitize=address,undefined&gt;</span><span class="s5">&quot;</span><span class="s1">)</span>
+        <span class="s2">elseif</span><span class="s1">(USE_MSAN)</span>
+            <span class="s4"># use semi-colons instead of spaces to separate arguments</span>
+            <span class="s4"># it is recommended to quote generator expressions in order to avoid unintentional splitting</span>
+            <span class="s0">target_compile_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE </span><span class="s5">&quot;</span><span class="s1">$&lt;</span><span class="s2">${</span><span class="s1">debug_mode</span><span class="s2">}</span><span class="s1">:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins&gt;</span><span class="s5">&quot;</span><span class="s1">)</span>
+            <span class="s0">target_link_options</span><span class="s1">(</span><span class="s2">${</span><span class="s1">target</span><span class="s2">} </span><span class="s1">PRIVATE </span><span class="s5">&quot;</span><span class="s1">$&lt;</span><span class="s2">${</span><span class="s1">debug_mode</span><span class="s2">}</span><span class="s1">:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins;-Wl,-rpath,tools/llvm-project/build/lib&gt;</span><span class="s5">&quot;</span><span class="s1">)</span>
+        <span class="s2">endif</span><span class="s1">()</span>
+    <span class="s2">endif</span><span class="s1">()</span>
+<span class="s2">endfunction</span><span class="s1">()</span>
+</pre>
+</body>
+</html>

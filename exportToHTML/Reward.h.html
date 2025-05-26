@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>Reward.h</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #bcbec4;}
+.s2 { color: #b3ae60;}
+.s3 { color: #6aab73;}
+.s4 { color: #cf8e6d;}
+.s5 { color: #bcbec4;}
+.s6 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Reward.h</font>
+</center></td></tr></table>
+<pre><span class="s0">//</span>
+<span class="s0">// Created by MINALP1 on 5/26/2025.</span>
+<span class="s0">//</span>
+
+<span class="s2">#ifndef </span><span class="s1">REWARD_H</span>
+<span class="s2">#define </span><span class="s1">REWARD_H</span>
+<span class="s2">#include </span><span class="s3">&lt;string&gt;</span>
+<span class="s2">#pragma </span><span class="s4">once</span>
+
+
+<span class="s4">class </span><span class="s1">Reward</span>
+<span class="s5">{</span>
+
+
+<span class="s4">protected</span><span class="s1">:</span>
+    <span class="s1">std::string type</span><span class="s5">;</span>
+    <span class="s4">int </span><span class="s1">value</span><span class="s5">;</span>
+    <span class="s4">int </span><span class="s1">turns</span><span class="s5">;</span>
+
+<span class="s4">public</span><span class="s1">:</span>
+    <span class="s1">Reward</span><span class="s5">(){};</span>
+    <span class="s4">explicit </span><span class="s1">Reward</span><span class="s5">(</span><span class="s4">const </span><span class="s1">std::string </span><span class="s5">&amp;</span><span class="s1">type</span><span class="s5">, </span><span class="s4">int </span><span class="s1">value </span><span class="s5">= </span><span class="s6">1</span><span class="s5">, </span><span class="s4">int </span><span class="s1">turns </span><span class="s5">= </span><span class="s6">1</span><span class="s5">);</span>
+
+    <span class="s4">explicit </span><span class="s1">Reward</span><span class="s5">(</span><span class="s4">const </span><span class="s1">Reward </span><span class="s5">&amp;</span><span class="s1">r</span><span class="s5">);</span>
+
+    <span class="s1">Reward </span><span class="s5">&amp;</span><span class="s4">operator</span><span class="s5">=(</span><span class="s4">const </span><span class="s1">Reward </span><span class="s5">&amp;</span><span class="s1">r</span><span class="s5">);</span>
+
+
+    <span class="s4">virtual </span><span class="s1">~Reward</span><span class="s5">() =  </span><span class="s4">default</span><span class="s5">;</span>
+
+
+    <span class="s4">friend </span><span class="s1">std::ostream </span><span class="s5">&amp;</span><span class="s4">operator</span><span class="s5">&lt;&lt;(</span><span class="s1">std::ostream </span><span class="s5">&amp;</span><span class="s1">os</span><span class="s5">, </span><span class="s4">const </span><span class="s1">Reward </span><span class="s5">&amp;</span><span class="s1">r</span><span class="s5">);</span>
+    <span class="s4">virtual bool </span><span class="s1">isInvincible</span><span class="s5">() </span><span class="s4">const</span><span class="s5">;</span><span class="s0">//daca o comentez typeid functioneaaza diferit ptr ca nu mai am polimorfism;</span>
+    <span class="s4">virtual bool </span><span class="s1">DoublePoints</span><span class="s5">() </span><span class="s4">const</span><span class="s5">;</span><span class="s0">//daca o comentez typeid functioneaaza diferit ptr ca nu mai am polimorfism;</span>
+
+<span class="s5">};</span>
+
+<span class="s4">class </span><span class="s1">Invincible : </span><span class="s4">public </span><span class="s1">Reward</span>
+<span class="s5">{</span>
+<span class="s4">public</span><span class="s1">:</span>
+    <span class="s1">Invincible</span><span class="s5">(){};</span>
+    <span class="s4">using </span><span class="s1">Reward::Reward</span><span class="s5">;</span><span class="s0">//inherits the constructors from rewards</span>
+    <span class="s4">bool </span><span class="s1">isInvincible</span><span class="s5">() </span><span class="s4">const </span><span class="s1">override</span><span class="s5">;</span>
+
+
+<span class="s5">};</span>
+
+<span class="s4">class </span><span class="s1">isDoublePoints : </span><span class="s4">public </span><span class="s1">Reward</span>
+<span class="s5">{</span>
+<span class="s4">public</span><span class="s1">:</span>
+    <span class="s1">isDoublePoints</span><span class="s5">(){};</span>
+    <span class="s4">using </span><span class="s1">Reward::Reward</span><span class="s5">;</span>
+    <span class="s4">bool </span><span class="s1">DoublePoints</span><span class="s5">() </span><span class="s4">const </span><span class="s1">override</span><span class="s5">;</span>
+
+
+<span class="s5">};</span>
+
+
+
+<span class="s2">#endif </span><span class="s0">//REWARD_H</span>
+</pre>
+</body>
+</html>

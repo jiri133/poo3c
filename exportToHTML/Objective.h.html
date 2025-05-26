@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>Objective.h</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #bcbec4;}
+.s2 { color: #b3ae60;}
+.s3 { color: #6aab73;}
+.s4 { color: #cf8e6d;}
+.s5 { color: #bcbec4;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Objective.h</font>
+</center></td></tr></table>
+<pre><span class="s0">//</span>
+<span class="s0">// Created by MINALP1 on 5/26/2025.</span>
+<span class="s0">//</span>
+
+<span class="s2">#ifndef </span><span class="s1">OBJECTIVE_H</span>
+<span class="s2">#define </span><span class="s1">OBJECTIVE_H</span>
+<span class="s2">#include </span><span class="s3">&lt;iostream&gt;</span>
+<span class="s2">#include </span><span class="s3">&quot;Fish.h&quot;</span>
+<span class="s2">#pragma </span><span class="s4">once</span>
+
+
+<span class="s4">class </span><span class="s1">Objective</span>
+<span class="s5">{</span>
+    <span class="s4">int </span><span class="s1">goal</span><span class="s5">;</span>
+
+<span class="s4">public</span><span class="s1">:</span>
+    <span class="s4">explicit </span><span class="s1">Objective</span><span class="s5">(</span><span class="s4">int </span><span class="s1">goalScore</span><span class="s5">) ;</span>
+
+    <span class="s1">Objective</span><span class="s5">(</span><span class="s4">const </span><span class="s1">Objective </span><span class="s5">&amp;</span><span class="s1">o</span><span class="s5">) ;</span>
+
+    <span class="s1">Objective </span><span class="s5">&amp;</span><span class="s4">operator</span><span class="s5">=(</span><span class="s4">const </span><span class="s1">Objective </span><span class="s5">&amp;</span><span class="s1">o</span><span class="s5">);</span>
+
+    <span class="s1">~Objective</span><span class="s5">();</span>
+
+    <span class="s4">bool </span><span class="s1">checkGoalReached</span><span class="s5">(</span><span class="s4">const int </span><span class="s1">currentScore</span><span class="s5">, </span><span class="s4">const </span><span class="s1">Fish </span><span class="s5">&amp;</span><span class="s1">playerFish</span><span class="s5">) </span><span class="s4">const</span><span class="s5">;</span>
+
+    <span class="s4">friend </span><span class="s1">std::ostream </span><span class="s5">&amp;</span><span class="s4">operator</span><span class="s5">&lt;&lt;(</span><span class="s1">std::ostream </span><span class="s5">&amp;</span><span class="s1">os</span><span class="s5">, </span><span class="s4">const </span><span class="s1">Objective </span><span class="s5">&amp;</span><span class="s1">obj</span><span class="s5">);</span>
+<span class="s5">};</span>
+
+
+
+<span class="s2">#endif </span><span class="s0">//OBJECTIVE_H</span>
+</pre>
+</body>
+</html>

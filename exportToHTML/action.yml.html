@@ -1,0 +1,95 @@
+<html>
+<head>
+<title>action.yml</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #bcbec4;}
+.s5 { color: #5f826b; font-style: italic;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+action.yml</font>
+</center></td></tr></table>
+<pre><span class="s0">name</span><span class="s1">: </span><span class="s3">'Process artifacts'</span>
+<span class="s0">description</span><span class="s1">: </span><span class="s3">'Process artifact files'</span>
+
+<span class="s0">runs</span><span class="s1">:</span>
+  <span class="s0">using</span><span class="s1">: </span><span class="s3">&quot;composite&quot;</span>
+  <span class="s0">steps</span><span class="s1">:</span>
+    <span class="s1">- </span><span class="s0">name</span><span class="s1">: </span><span class="s4">Patch macOS launcher</span>
+      <span class="s0">shell</span><span class="s1">: </span><span class="s4">bash</span>
+      <span class="s0">if</span><span class="s1">: </span><span class="s4">runner.os == 'macOS'</span>
+      <span class="s0">run</span><span class="s1">: </span><span class="s4">|</span>
+        <span class="s4">sed -i '' -e &quot;s/oop/${EXECUTABLE_NAME}/&quot; &quot;${{ env.ZIP_NAME }}/launcher.command&quot;</span>
+        <span class="s4">chmod +x &quot;${{ env.ZIP_NAME }}/launcher.command&quot;</span>
+
+    <span class="s1">- </span><span class="s0">name</span><span class="s1">: </span><span class="s4">Copy missing dylibs</span>
+      <span class="s0">shell</span><span class="s1">: </span><span class="s4">bash</span>
+      <span class="s0">if</span><span class="s1">: </span><span class="s4">runner.os == 'macOS' &amp;&amp; matrix.cxx == 'clang++'</span>
+      <span class="s5"># FIXME: temp disable asan for macOS due to github issues</span>
+      <span class="s0">run</span><span class="s1">: </span><span class="s4">|</span>
+        <span class="s4">if [[ &quot;${BUILD_TYPE}&quot; =~ &quot;Deb&quot; ]]; then</span>
+          <span class="s4">mkdir lib</span>
+          <span class="s4"># cp /Library/Developer/CommandLineTools/usr/lib/clang/16/lib/darwin/libclang_rt.asan_osx_dynamic.dylib lib</span>
+          <span class="s4"># install_name_tool -change @rpath/libclang_rt.asan_osx_dynamic.dylib @executable_path/lib/libclang_rt.asan_osx_dynamic.dylib ${{ env.ZIP_NAME }}/${{ env.EXECUTABLE_NAME }}</span>
+          <span class="s4">mv lib ${{ env.ZIP_NAME }}/</span>
+        <span class="s4">fi</span>
+
+    <span class="s1">- </span><span class="s0">name</span><span class="s1">: </span><span class="s4">Copy missing dylibs (g++)</span>
+      <span class="s0">shell</span><span class="s1">: </span><span class="s4">bash</span>
+      <span class="s0">if</span><span class="s1">: </span><span class="s4">runner.os == 'macOS' &amp;&amp; startsWith(matrix.cxx, 'g++')</span>
+      <span class="s0">run</span><span class="s1">: </span><span class="s4">|</span>
+        <span class="s4">mkdir lib</span>
+        <span class="s4">cp /opt/homebrew/lib/gcc/13/libstdc++.6.dylib /opt/homebrew/lib/gcc/13/libgcc_s.1.1.dylib lib</span>
+        <span class="s4">install_name_tool -change /opt/homebrew/lib/gcc/13/libstdc++.6.dylib @executable_path/lib/libstdc++.6.dylib ${{ env.ZIP_NAME }}/${{ env.EXECUTABLE_NAME }}</span>
+        <span class="s4">install_name_tool -change /opt/homebrew/lib/gcc/13/libgcc_s.1.1.dylib @executable_path/lib/libgcc_s.1.1.dylib ${{ env.ZIP_NAME }}/${{ env.EXECUTABLE_NAME }}</span>
+        <span class="s4">mv lib ${{ env.ZIP_NAME }}/</span>
+
+    <span class="s1">- </span><span class="s0">name</span><span class="s1">: </span><span class="s4">Copy missing dlls</span>
+      <span class="s0">shell</span><span class="s1">: </span><span class="s4">bash</span>
+      <span class="s0">if</span><span class="s1">: </span><span class="s4">runner.os == 'Windows' &amp;&amp; matrix.cxx == 'cl'</span>
+      <span class="s0">run</span><span class="s1">: </span><span class="s4">|</span>
+        <span class="s4">if [[ &quot;${BUILD_TYPE}&quot; =~ &quot;Deb&quot; ]]; then</span>
+          <span class="s4"># runtime debug DLLs</span>
+          <span class="s4">cp &quot;$(which ucrtbased.dll)&quot; \</span>
+             <span class="s4">&quot;$(which VCRUNTIME140_1D.dll)&quot; \</span>
+             <span class="s4">&quot;$(which MSVCP140D.dll)&quot; \</span>
+             <span class="s4">&quot;$(which VCRUNTIME140D.dll)&quot; \</span>
+             <span class="s4">${GITHUB_WORKSPACE}/${{ env.ZIP_NAME }}</span>
+
+          <span class="s4"># sanitizers DLLs</span>
+          <span class="s4">vcver=$(cat &quot;C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt&quot;)</span>
+          <span class="s4">vcbindir=&quot;C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/${vcver}/bin/Hostx64/x64/&quot;</span>
+          <span class="s4">cp &quot;${vcbindir}/clang_rt.asan_dynamic-x86_64.dll&quot; \</span>
+             <span class="s4">&quot;${vcbindir}/clang_rt.asan_dbg_dynamic-x86_64.dll&quot; \</span>
+             <span class="s4">${GITHUB_WORKSPACE}/${{ env.ZIP_NAME }}</span>
+        <span class="s4">fi</span>
+
+        <span class="s4"># runtime release DLLs</span>
+        <span class="s4"># if [[ &quot;${BUILD_TYPE}&quot; =~ &quot;Rel&quot; ]]; then</span>
+        <span class="s4">cp &quot;$(which ucrtbase.dll)&quot; \</span>
+             <span class="s4">&quot;$(which VCRUNTIME140_1.dll)&quot; \</span>
+             <span class="s4">&quot;$(which MSVCP140.dll)&quot; \</span>
+             <span class="s4">&quot;$(which VCRUNTIME140.dll)&quot; \</span>
+             <span class="s4">${GITHUB_WORKSPACE}/${{ env.ZIP_NAME }}</span>
+        <span class="s4"># fi</span>
+
+    <span class="s1">- </span><span class="s0">name</span><span class="s1">: </span><span class="s4">Copy stdlib (MinGW)</span>
+      <span class="s0">shell</span><span class="s1">: </span><span class="s4">bash</span>
+      <span class="s0">if</span><span class="s1">: </span><span class="s4">runner.os == 'Windows' &amp;&amp; matrix.cxx == 'g++'</span>
+      <span class="s5"># static linking might not work with MinGW, might be easier this way</span>
+      <span class="s0">run</span><span class="s1">: </span><span class="s4">|</span>
+        <span class="s4">cp gcc/mingw64/bin/libstdc++-6.dll \</span>
+          <span class="s4">gcc/mingw64/bin/libgcc_s_seh-1.dll \</span>
+          <span class="s4">gcc/mingw64/bin/libwinpthread-1.dll \</span>
+          <span class="s4">${GITHUB_WORKSPACE}/${{ env.ZIP_NAME }}</span>
+</pre>
+</body>
+</html>

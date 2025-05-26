@@ -9,43 +9,134 @@
 #pragma once
 
 
+class Fish
+{
+protected:
+    std::string name;
+    int size;
+    int speed;
+    int growthFactor;
 
-class Fish {
+public:
+    Fish()
+    {
+    };
+    // Constructor cu parametri
+    Fish(const std::string &name, int size, int speed, int growthFactor = 1): name(name), size(size), speed(speed),
+                                                                              growthFactor(growthFactor)
+    {
+    }
 
-        std::string name;
-        int size;
-        int speed;
-        int growthFactor;
+    // Constructor de copiere
+    Fish(const Fish &f): name(f.name), size(f.size), speed(f.speed), growthFactor(f.growthFactor)
+    {
+    }
 
-    public:
-        // Constructor cu parametri
-        Fish(const std::string &name, int size, int speed, int growthFactor = 1);
+    // Operator= de copiere
+    Fish &operator=(const Fish &other)
+    {
+        if (this != &other)
+        {
+            name = other.name;
+            size = other.size;
+            speed = other.speed;
+            growthFactor = other.growthFactor;
+        }
+        return *this;
+    }
 
-        // Constructor de copiere
-        Fish(const Fish &f);
-        // Operator= de copiere
-        Fish &operator=(const Fish &other);
+    // Destructor
+    virtual ~Fish()=default;
 
-        // Destructor
-        ~Fish();
+    // Metode
 
-        // Metode
-        bool canEat(const Fish &other) const;
 
-        void grow();
+    virtual void grow()
+    {
+        size = size + 1;
+        speed += 10;
+    }
 
-        void evolve();
+    // void evolve();
+    virtual bool canEat(const Fish &other) const =0;
 
-        const std::string &getName() const ;
+    virtual const std::string &getName() const =0 ;
 
-        friend std::ostream &operator<<(std::ostream &os, const Fish &f);
+    friend std::ostream &operator<<(std::ostream &os, const Fish &f)
+    {
+        os << "Fish(" << f.name << ", Size: " << f.size << ", Speed: " << f.speed << ")";
+        return os;
+    }
+    int getSize() const { return size; }
+};
 
-        int getSize() const ;
-        // int getSpeed() const { return speed; }
+class Player : public Fish
+{
+public:
+    Player();
+
+    Player &operator=(const Player &other)
+    {
+        if (this != &other)
+        {
+            Fish::operator=(other);
+        }
+        return *this;
+    }
+
+    Player(const std::string &name, int size, int speed, int growthFactor = 1): Fish(name, size, speed, growthFactor){}
+
+    ~Player() override=default;
+
+    bool canEat(const Fish &other) const override
+    {
+        return size > other.getSize();
+    }
+
+    void grow() override
+    {
+        this->Fish::grow();
+    }
+
+    // void evolve();
+
+    const std::string &getName() const override
+    {
+        return name;
+    }
+};
+
+class NPCFish : public Fish
+{
+    using Fish::Fish;
+    bool canEat(const Fish &other) const override
+    {
+        return size > other.getSize();
+    }
+
+    void grow()override
+    {
+        this->Fish::grow();
+    }
+
+    // void evolve();
+
+    const std::string &getName() const override
+    {
+        return name;
+    }
+
+
+};
+class NPCPlayer_mic : public NPCFish{
+using NPCFish::NPCFish;
 
 
 };
 
+class NPCNPCFish_mare : public NPCFish{
+using NPCFish::NPCFish;
+};
 
 
 #endif //FISH_H
