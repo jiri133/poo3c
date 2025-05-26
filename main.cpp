@@ -16,14 +16,12 @@
 #include "Game.h"
 
 
-
 // Clasa Game
-
 
 
 int main()
 {
-    Fish playerFish("Sharkey", 1, 0, 10);
+    std::shared_ptr<Fish> playerFish = std::make_shared<Player>("Sharkey", 1, 0, 10);
     Objective goal(500);
     Game game(playerFish, goal);
 
@@ -58,7 +56,7 @@ int main()
     while (!game.isObjectiveMet() && game.isRunning())
     {
         game.ChooseAction();
-        game.continuespawnfish(level, playerFish); //ca sa am constant pestisori mici in acvariu
+        game.continuespawnfish(level, *playerFish); //ca sa am constant pestisori mici in acvariu
     }
     game.stop(); // o metodă care setează running = false
     if (rewardThread.joinable())
