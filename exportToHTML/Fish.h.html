@@ -1,0 +1,153 @@
+<html>
+<head>
+<title>Fish.h</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #bcbec4;}
+.s2 { color: #b3ae60;}
+.s3 { color: #6aab73;}
+.s4 { color: #cf8e6d;}
+.s5 { color: #bcbec4;}
+.s6 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Fish.h</font>
+</center></td></tr></table>
+<pre><span class="s0">//</span>
+<span class="s0">// Created by MINALP1 on 5/26/2025.</span>
+<span class="s0">//</span>
+
+<span class="s2">#ifndef </span><span class="s1">FISH_H</span>
+<span class="s2">#define </span><span class="s1">FISH_H</span>
+<span class="s2">#include </span><span class="s3">&lt;string&gt;</span>
+<span class="s2">#include </span><span class="s3">&lt;iostream&gt;</span>
+<span class="s2">#pragma </span><span class="s4">once</span>
+
+
+<span class="s4">class </span><span class="s1">Fish</span>
+<span class="s5">{</span>
+<span class="s4">protected</span><span class="s1">:</span>
+    <span class="s1">std::string name</span><span class="s5">;</span>
+    <span class="s4">int </span><span class="s1">size</span><span class="s5">;</span>
+    <span class="s4">int </span><span class="s1">speed</span><span class="s5">;</span>
+    <span class="s4">int </span><span class="s1">growthFactor</span><span class="s5">;</span>
+
+<span class="s4">public</span><span class="s1">:</span>
+    <span class="s1">Fish</span><span class="s5">()</span>
+    <span class="s5">{</span>
+    <span class="s5">};</span>
+    <span class="s0">// Constructor cu parametri</span>
+    <span class="s1">Fish</span><span class="s5">(</span><span class="s4">const </span><span class="s1">std::string </span><span class="s5">&amp;</span><span class="s1">name</span><span class="s5">, </span><span class="s4">int </span><span class="s1">size</span><span class="s5">, </span><span class="s4">int </span><span class="s1">speed</span><span class="s5">, </span><span class="s4">int </span><span class="s1">growthFactor </span><span class="s5">= </span><span class="s6">1</span><span class="s5">)</span><span class="s1">: name</span><span class="s5">(</span><span class="s1">name</span><span class="s5">), </span><span class="s1">size</span><span class="s5">(</span><span class="s1">size</span><span class="s5">), </span><span class="s1">speed</span><span class="s5">(</span><span class="s1">speed</span><span class="s5">),</span>
+                                                                              <span class="s1">growthFactor</span><span class="s5">(</span><span class="s1">growthFactor</span><span class="s5">)</span>
+    <span class="s5">{</span>
+    <span class="s5">}</span>
+
+    <span class="s0">// Constructor de copiere</span>
+    <span class="s1">Fish</span><span class="s5">(</span><span class="s4">const </span><span class="s1">Fish </span><span class="s5">&amp;</span><span class="s1">f</span><span class="s5">)</span><span class="s1">: name</span><span class="s5">(</span><span class="s1">f</span><span class="s5">.</span><span class="s1">name</span><span class="s5">), </span><span class="s1">size</span><span class="s5">(</span><span class="s1">f</span><span class="s5">.</span><span class="s1">size</span><span class="s5">), </span><span class="s1">speed</span><span class="s5">(</span><span class="s1">f</span><span class="s5">.</span><span class="s1">speed</span><span class="s5">), </span><span class="s1">growthFactor</span><span class="s5">(</span><span class="s1">f</span><span class="s5">.</span><span class="s1">growthFactor</span><span class="s5">)</span>
+    <span class="s5">{</span>
+    <span class="s5">}</span>
+
+    <span class="s0">// Operator= de copiere</span>
+    <span class="s1">Fish </span><span class="s5">&amp;</span><span class="s4">operator</span><span class="s5">=(</span><span class="s4">const </span><span class="s1">Fish </span><span class="s5">&amp;</span><span class="s1">other</span><span class="s5">)</span>
+    <span class="s5">{</span>
+        <span class="s4">if </span><span class="s5">(</span><span class="s4">this </span><span class="s5">!= &amp;</span><span class="s1">other</span><span class="s5">)</span>
+        <span class="s5">{</span>
+            <span class="s1">name </span><span class="s5">= </span><span class="s1">other</span><span class="s5">.</span><span class="s1">name</span><span class="s5">;</span>
+            <span class="s1">size </span><span class="s5">= </span><span class="s1">other</span><span class="s5">.</span><span class="s1">size</span><span class="s5">;</span>
+            <span class="s1">speed </span><span class="s5">= </span><span class="s1">other</span><span class="s5">.</span><span class="s1">speed</span><span class="s5">;</span>
+            <span class="s1">growthFactor </span><span class="s5">= </span><span class="s1">other</span><span class="s5">.</span><span class="s1">growthFactor</span><span class="s5">;</span>
+        <span class="s5">}</span>
+        <span class="s4">return </span><span class="s5">*</span><span class="s4">this</span><span class="s5">;</span>
+    <span class="s5">}</span>
+
+    <span class="s0">// Destructor</span>
+    <span class="s4">virtual </span><span class="s1">~Fish</span><span class="s5">();</span>
+
+    <span class="s0">// Metode</span>
+
+
+    <span class="s4">virtual void </span><span class="s1">grow</span><span class="s5">()</span>
+    <span class="s5">{</span>
+        <span class="s1">size </span><span class="s5">= </span><span class="s1">size </span><span class="s5">+ </span><span class="s6">1</span><span class="s5">;</span>
+        <span class="s1">speed </span><span class="s5">+= </span><span class="s6">10</span><span class="s5">;</span>
+    <span class="s5">}</span>
+
+    <span class="s0">// void evolve();</span>
+    <span class="s4">virtual bool </span><span class="s1">canEat</span><span class="s5">(</span><span class="s4">const </span><span class="s1">Fish </span><span class="s5">&amp;</span><span class="s1">other</span><span class="s5">) </span><span class="s4">const </span><span class="s5">=</span><span class="s6">0</span><span class="s5">;</span>
+
+    <span class="s4">virtual const </span><span class="s1">std::string </span><span class="s5">&amp;</span><span class="s1">getName</span><span class="s5">() </span><span class="s4">const </span><span class="s5">=</span><span class="s6">0 </span><span class="s5">;</span>
+
+    <span class="s4">friend </span><span class="s1">std::ostream </span><span class="s5">&amp;</span><span class="s4">operator</span><span class="s5">&lt;&lt;(</span><span class="s1">std::ostream </span><span class="s5">&amp;</span><span class="s1">os</span><span class="s5">, </span><span class="s4">const </span><span class="s1">Fish </span><span class="s5">&amp;</span><span class="s1">f</span><span class="s5">)</span>
+    <span class="s5">{</span>
+        <span class="s1">os </span><span class="s5">&lt;&lt; </span><span class="s3">&quot;Fish(&quot; </span><span class="s5">&lt;&lt; </span><span class="s1">f</span><span class="s5">.</span><span class="s1">name </span><span class="s5">&lt;&lt; </span><span class="s3">&quot;, Size: &quot; </span><span class="s5">&lt;&lt; </span><span class="s1">f</span><span class="s5">.</span><span class="s1">size </span><span class="s5">&lt;&lt; </span><span class="s3">&quot;, Speed: &quot; </span><span class="s5">&lt;&lt; </span><span class="s1">f</span><span class="s5">.</span><span class="s1">speed </span><span class="s5">&lt;&lt; </span><span class="s3">&quot;)&quot;</span><span class="s5">;</span>
+        <span class="s4">return </span><span class="s1">os</span><span class="s5">;</span>
+    <span class="s5">}</span>
+    <span class="s4">int </span><span class="s1">getSize</span><span class="s5">() </span><span class="s4">const </span><span class="s5">{ </span><span class="s4">return </span><span class="s1">size</span><span class="s5">; }</span>
+<span class="s5">};</span>
+
+<span class="s4">class </span><span class="s1">Player : </span><span class="s4">public </span><span class="s1">Fish</span>
+<span class="s5">{</span>
+<span class="s4">public</span><span class="s1">:</span>
+    <span class="s1">Player</span><span class="s5">();</span>
+
+    <span class="s1">Player </span><span class="s5">&amp;</span><span class="s4">operator</span><span class="s5">=(</span><span class="s4">const </span><span class="s1">Player </span><span class="s5">&amp;</span><span class="s1">other</span><span class="s5">)</span>
+    <span class="s5">{</span>
+        <span class="s4">if </span><span class="s5">(</span><span class="s4">this </span><span class="s5">!= &amp;</span><span class="s1">other</span><span class="s5">)</span>
+        <span class="s5">{</span>
+            <span class="s1">Fish::</span><span class="s4">operator</span><span class="s5">=(</span><span class="s1">other</span><span class="s5">);</span>
+        <span class="s5">}</span>
+    <span class="s5">}</span>
+
+    <span class="s1">Player</span><span class="s5">(</span><span class="s4">const </span><span class="s1">std::string </span><span class="s5">&amp;</span><span class="s1">name</span><span class="s5">, </span><span class="s4">int </span><span class="s1">size</span><span class="s5">, </span><span class="s4">int </span><span class="s1">speed</span><span class="s5">, </span><span class="s4">int </span><span class="s1">growthFactor </span><span class="s5">= </span><span class="s6">1</span><span class="s5">);</span>
+
+    <span class="s1">~Player</span><span class="s5">();</span>
+
+    <span class="s4">bool </span><span class="s1">canEat</span><span class="s5">(</span><span class="s4">const </span><span class="s1">Fish </span><span class="s5">&amp;</span><span class="s1">other</span><span class="s5">) </span><span class="s4">const </span><span class="s1">override</span>
+    <span class="s5">{</span>
+        <span class="s4">return </span><span class="s1">size </span><span class="s5">&gt; </span><span class="s1">other</span><span class="s5">.</span><span class="s1">getSize</span><span class="s5">();</span>
+    <span class="s5">}</span>
+
+    <span class="s4">void </span><span class="s1">grow</span><span class="s5">()</span>
+    <span class="s5">{</span>
+        <span class="s4">this</span><span class="s5">-&gt;</span><span class="s1">Fish::grow</span><span class="s5">();</span>
+    <span class="s5">}</span>
+
+    <span class="s0">// void evolve();</span>
+
+    <span class="s4">const </span><span class="s1">std::string </span><span class="s5">&amp;</span><span class="s1">getName</span><span class="s5">() </span><span class="s4">const </span><span class="s1">override</span>
+    <span class="s5">{</span>
+        <span class="s4">return </span><span class="s1">name</span><span class="s5">;</span>
+    <span class="s5">}</span>
+<span class="s5">};</span>
+
+<span class="s4">class </span><span class="s1">NPCFish : </span><span class="s4">public </span><span class="s1">Fish</span>
+<span class="s5">{</span>
+    <span class="s4">using </span><span class="s1">Fish::Fish</span><span class="s5">;</span>
+    <span class="s4">bool </span><span class="s1">canEat</span><span class="s5">(</span><span class="s4">const </span><span class="s1">Fish </span><span class="s5">&amp;</span><span class="s1">other</span><span class="s5">) </span><span class="s4">const </span><span class="s1">override</span>
+    <span class="s5">{</span>
+        <span class="s4">return </span><span class="s1">size </span><span class="s5">&gt; </span><span class="s1">other</span><span class="s5">.</span><span class="s1">getSize</span><span class="s5">();</span>
+    <span class="s5">}</span>
+
+    <span class="s4">void </span><span class="s1">grow</span><span class="s5">()</span>
+    <span class="s5">{</span>
+        <span class="s4">this</span><span class="s5">-&gt;</span><span class="s1">Fish::grow</span><span class="s5">();</span>
+    <span class="s5">}</span>
+
+    <span class="s0">// void evolve();</span>
+
+    <span class="s4">const </span><span class="s1">std::string </span><span class="s5">&amp;</span><span class="s1">getName</span><span class="s5">() </span><span class="s4">const </span><span class="s1">override</span>
+    <span class="s5">{</span>
+        <span class="s4">return </span><span class="s1">name</span><span class="s5">;</span>
+    <span class="s5">}</span>
+<span class="s5">};</span>
+
+
+<span class="s2">#endif </span><span class="s0">//FISH_H</span>
+</pre>
+</body>
+</html>

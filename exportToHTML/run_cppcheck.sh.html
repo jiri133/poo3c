@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>run_cppcheck.sh</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #bcbec4; font-weight: bold;}
+.s1 { color: #bcbec4;}
+.s2 { color: #6aab73;}
+.s3 { color: #cf8e6d;}
+.s4 { color: #bcbec4;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+run_cppcheck.sh</font>
+</center></td></tr></table>
+<pre><span class="s0">#!/usr/bin/bash</span>
+
+<span class="s1">cppcheck --enable=all \ 
+    --inline-suppr \ 
+    --project=</span><span class="s2">&quot;</span><span class="s3">$</span><span class="s4">{</span><span class="s1">BUILD_DIR:-build</span><span class="s4">}</span><span class="s2">&quot;</span><span class="s1">/compile_commands.json \ 
+    -i</span><span class="s2">&quot;</span><span class="s3">$</span><span class="s4">{</span><span class="s1">BUILD_DIR:-build</span><span class="s4">}</span><span class="s2">&quot; </span><span class="s1">--suppress=</span><span class="s2">&quot;*:</span><span class="s3">$</span><span class="s4">{</span><span class="s1">BUILD_DIR:-build</span><span class="s4">}</span><span class="s2">/*&quot; </span><span class="s1">\ 
+    -i</span><span class="s2">&quot;</span><span class="s3">$</span><span class="s4">{</span><span class="s1">EXT_DIR:-ext</span><span class="s4">}</span><span class="s2">&quot; </span><span class="s1">--suppress=</span><span class="s2">&quot;*:</span><span class="s3">$</span><span class="s4">{</span><span class="s1">EXT_DIR:-ext</span><span class="s4">}</span><span class="s2">/*&quot; </span><span class="s1">\ 
+    -i</span><span class="s2">&quot;</span><span class="s3">$</span><span class="s4">{</span><span class="s1">GEN_DIR:-generated</span><span class="s4">}</span><span class="s2">&quot; </span><span class="s1">--suppress=</span><span class="s2">&quot;*:</span><span class="s3">$</span><span class="s4">{</span><span class="s1">GEN_DIR:-generated</span><span class="s4">}</span><span class="s2">/*&quot; </span><span class="s1">\ 
+    --suppress=missingIncludeSystem \ 
+    --suppress=unmatchedSuppression \ 
+    --suppress=useStlAlgorithm \ 
+    --check-level=exhaustive \ 
+    --error-exitcode=</span><span class="s5">1</span>
+</pre>
+</body>
+</html>

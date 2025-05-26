@@ -1,0 +1,942 @@
+<html>
+<head>
+<title>CMakeCXXCompilerId.cpp</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #bcbec4;}
+.s2 { color: #b3ae60;}
+.s3 { color: #6aab73;}
+.s4 { color: #bcbec4;}
+.s5 { color: #2aacb8;}
+.s6 { color: #cf8e6d;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+CMakeCXXCompilerId.cpp</font>
+</center></td></tr></table>
+<pre><span class="s0">/* This source file must have a .cpp extension so that all C++ compilers 
+   recognize the extension without flags.  Borland does not know .cxx for 
+   example.  */</span>
+<span class="s2">#ifndef </span><span class="s1">__cplusplus</span>
+<span class="s2"># error </span><span class="s3">&quot;A C compiler has been selected for C++.&quot;</span>
+<span class="s2">#endif</span>
+
+<span class="s2">#if </span><span class="s4">!</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__has_include</span><span class="s4">)</span>
+<span class="s0">/* If the compiler does not have __has_include, pretend the answer is 
+   always no.  */</span>
+<span class="s2">#  define </span><span class="s1">__has_include</span><span class="s4">(</span><span class="s1">x</span><span class="s4">) </span><span class="s5">0</span>
+<span class="s2">#endif</span>
+
+
+<span class="s0">/* Version number components: V=Version, R=Revision, P=Patch 
+   Version date components:   YYYY=Year, MM=Month,   DD=Day  */</span>
+
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICC</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Intel&quot;</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;MSVC&quot;</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;GNU&quot;</span>
+<span class="s2"># endif</span>
+  <span class="s0">/* __INTEL_COMPILER = VRP prior to 2021, and then VVVV for 2021 and later, 
+     except that a few beta releases use the old format with V=2021.  */</span>
+<span class="s2"># if </span><span class="s1">__INTEL_COMPILER </span><span class="s4">&lt; </span><span class="s5">2021 </span><span class="s4">|| </span><span class="s1">__INTEL_COMPILER </span><span class="s4">== </span><span class="s5">202110 </span><span class="s4">|| </span><span class="s1">__INTEL_COMPILER </span><span class="s4">== </span><span class="s5">202111</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER</span><span class="s4">/</span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER</span><span class="s4">/</span><span class="s5">10 </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER_UPDATE</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER_UPDATE</span><span class="s4">)</span>
+<span class="s2">#  else</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER   </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2">#  endif</span>
+<span class="s2"># else</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER_UPDATE</span><span class="s4">)</span>
+   <span class="s0">/* The third version component from --version is an update index, 
+      but no macro is provided for it.  */</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s5">0</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER_BUILD_DATE</span><span class="s4">)</span>
+   <span class="s0">/* __INTEL_COMPILER_BUILD_DATE = YYYYMMDD */</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_TWEAK DEC</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER_BUILD_DATE</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+   <span class="s0">/* _MSC_VER = VVRR */</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUG__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GNUG__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s4">(</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_CLANG_COMPILER</span><span class="s4">)) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_LLVM_COMPILER</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;IntelLLVM&quot;</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;MSVC&quot;</span>
+<span class="s2">#endif</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;GNU&quot;</span>
+<span class="s2">#endif</span>
+<span class="s0">/* __INTEL_LLVM_COMPILER = VVVVRP prior to 2021.2.0, VVVVRRPP for 2021.2.0 and 
+ * later.  Look for 6 digit vs. 8 digit version number to decide encoding. 
+ * VVVV is no smaller than the current year when a version is released. 
+ */</span>
+<span class="s2">#if </span><span class="s1">__INTEL_LLVM_COMPILER </span><span class="s4">&lt; </span><span class="s5">1000000L</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_LLVM_COMPILER</span><span class="s4">/</span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_LLVM_COMPILER</span><span class="s4">/</span><span class="s5">10 </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__INTEL_LLVM_COMPILER    </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2">#else</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_LLVM_COMPILER</span><span class="s4">/</span><span class="s5">10000</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__INTEL_LLVM_COMPILER</span><span class="s4">/</span><span class="s5">100 </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__INTEL_LLVM_COMPILER     </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2">#endif</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+  <span class="s0">/* _MSC_VER = VVRR */</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2">#endif</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUG__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GNUG__</span><span class="s4">)</span>
+<span class="s2">#endif</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2">#endif</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">SIMULATE_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__PATHCC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;PathScale&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__PATHCC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__PATHCC_MINOR__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__PATHCC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__PATHCC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__BORLANDC__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CODEGEARC_VERSION__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Embarcadero&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR HEX</span><span class="s4">(</span><span class="s1">__CODEGEARC_VERSION__</span><span class="s4">&gt;&gt;</span><span class="s5">24 </span><span class="s4">&amp; </span><span class="s5">0x00FF</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR HEX</span><span class="s4">(</span><span class="s1">__CODEGEARC_VERSION__</span><span class="s4">&gt;&gt;</span><span class="s5">16 </span><span class="s4">&amp; </span><span class="s5">0x00FF</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__CODEGEARC_VERSION__     </span><span class="s4">&amp; </span><span class="s5">0xFFFF</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__BORLANDC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Borland&quot;</span>
+  <span class="s0">/* __BORLANDC__ = 0xVRR */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR HEX</span><span class="s4">(</span><span class="s1">__BORLANDC__</span><span class="s4">&gt;&gt;</span><span class="s5">8</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR HEX</span><span class="s4">(</span><span class="s1">__BORLANDC__ </span><span class="s4">&amp; </span><span class="s5">0xFF</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__WATCOMC__</span><span class="s4">) &amp;&amp; </span><span class="s1">__WATCOMC__ </span><span class="s4">&lt; </span><span class="s5">1200</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Watcom&quot;</span>
+   <span class="s0">/* __WATCOMC__ = VVRR */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__WATCOMC__ </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">((</span><span class="s1">__WATCOMC__ </span><span class="s4">/ </span><span class="s5">10</span><span class="s4">) % </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s4">(</span><span class="s1">__WATCOMC__ </span><span class="s4">% </span><span class="s5">10</span><span class="s4">) &gt; </span><span class="s5">0</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__WATCOMC__ </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__WATCOMC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;OpenWatcom&quot;</span>
+   <span class="s0">/* __WATCOMC__ = VVRP + 1100 */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">((</span><span class="s1">__WATCOMC__ </span><span class="s4">- </span><span class="s5">1100</span><span class="s4">) / </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">((</span><span class="s1">__WATCOMC__ </span><span class="s4">/ </span><span class="s5">10</span><span class="s4">) % </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s4">(</span><span class="s1">__WATCOMC__ </span><span class="s4">% </span><span class="s5">10</span><span class="s4">) &gt; </span><span class="s5">0</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__WATCOMC__ </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__SUNPRO_CC</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;SunPro&quot;</span>
+<span class="s2"># if </span><span class="s1">__SUNPRO_CC </span><span class="s4">&gt;= </span><span class="s5">0x5100</span>
+   <span class="s0">/* __SUNPRO_CC = 0xVRRP */</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR HEX</span><span class="s4">(</span><span class="s1">__SUNPRO_CC</span><span class="s4">&gt;&gt;</span><span class="s5">12</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR HEX</span><span class="s4">(</span><span class="s1">__SUNPRO_CC</span><span class="s4">&gt;&gt;</span><span class="s5">4 </span><span class="s4">&amp; </span><span class="s5">0xFF</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH HEX</span><span class="s4">(</span><span class="s1">__SUNPRO_CC    </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)</span>
+<span class="s2"># else</span>
+   <span class="s0">/* __SUNPRO_CC = 0xVRP */</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR HEX</span><span class="s4">(</span><span class="s1">__SUNPRO_CC</span><span class="s4">&gt;&gt;</span><span class="s5">8</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR HEX</span><span class="s4">(</span><span class="s1">__SUNPRO_CC</span><span class="s4">&gt;&gt;</span><span class="s5">4 </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH HEX</span><span class="s4">(</span><span class="s1">__SUNPRO_CC    </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__HP_aCC</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;HP&quot;</span>
+  <span class="s0">/* __HP_aCC = VVRRPP */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__HP_aCC</span><span class="s4">/</span><span class="s5">10000</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__HP_aCC</span><span class="s4">/</span><span class="s5">100 </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__HP_aCC     </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__DECCXX</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Compaq&quot;</span>
+  <span class="s0">/* __DECCXX_VER = VVRRTPPPP */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__DECCXX_VER</span><span class="s4">/</span><span class="s5">10000000</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__DECCXX_VER</span><span class="s4">/</span><span class="s5">100000  </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__DECCXX_VER         </span><span class="s4">% </span><span class="s5">10000</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__COMPILER_VER__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;zOS&quot;</span>
+  <span class="s0">/* __IBMCPP__ = VRP */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">/</span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">/</span><span class="s5">10 </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__    </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__open_xl__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;IBMClang&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__open_xl_version__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__open_xl_release__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__open_xl_modification__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_TWEAK DEC</span><span class="s4">(</span><span class="s1">__open_xl_ptf_fix_level__</span><span class="s4">)</span>
+
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ibmxl__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;XLClang&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__ibmxl_version__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__ibmxl_release__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__ibmxl_modification__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_TWEAK DEC</span><span class="s4">(</span><span class="s1">__ibmxl_ptf_fix_level__</span><span class="s4">)</span>
+
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">) &amp;&amp; !</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__COMPILER_VER__</span><span class="s4">) &amp;&amp; </span><span class="s1">__IBMCPP__ </span><span class="s4">&gt;= </span><span class="s5">800</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;XL&quot;</span>
+  <span class="s0">/* __IBMCPP__ = VRP */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">/</span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">/</span><span class="s5">10 </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__    </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">) &amp;&amp; !</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__COMPILER_VER__</span><span class="s4">) &amp;&amp; </span><span class="s1">__IBMCPP__ </span><span class="s4">&lt; </span><span class="s5">800</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;VisualAge&quot;</span>
+  <span class="s0">/* __IBMCPP__ = VRP */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">/</span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">/</span><span class="s5">10 </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__IBMCPP__    </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__NVCOMPILER</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;NVHPC&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__NVCOMPILER_MAJOR__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__NVCOMPILER_MINOR__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__NVCOMPILER_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__NVCOMPILER_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__PGI</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;PGI&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__PGIC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__PGIC_MINOR__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__PGIC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__PGIC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__cray__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;CrayClang&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__cray_major__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__cray_minor__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__cray_patchlevel__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_INTERNAL_STR __clang_version__</span>
+
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_CRAYC</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Cray&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">_RELEASE_MAJOR</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">_RELEASE_MINOR</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TI_COMPILER_VERSION__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;TI&quot;</span>
+  <span class="s0">/* __TI_COMPILER_VERSION__ = VVVRRRPPP */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__TI_COMPILER_VERSION__</span><span class="s4">/</span><span class="s5">1000000</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__TI_COMPILER_VERSION__</span><span class="s4">/</span><span class="s5">1000   </span><span class="s4">% </span><span class="s5">1000</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__TI_COMPILER_VERSION__        </span><span class="s4">% </span><span class="s5">1000</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CLANG_FUJITSU</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;FujitsuClang&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__FCC_major__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__FCC_minor__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__FCC_patchlevel__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_INTERNAL_STR __clang_version__</span>
+
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__FUJITSU</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Fujitsu&quot;</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__FCC_version__</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION __FCC_version__</span>
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__FCC_major__</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__FCC_major__</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__FCC_minor__</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__FCC_patchlevel__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__fcc_version</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_INTERNAL DEC</span><span class="s4">(</span><span class="s1">__fcc_version</span><span class="s4">)</span>
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__FCC_VERSION</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_INTERNAL DEC</span><span class="s4">(</span><span class="s1">__FCC_VERSION</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ghs__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;GHS&quot;</span>
+<span class="s0">/* __GHS_VERSION_NUMBER = VVVVRP */</span>
+<span class="s2"># ifdef </span><span class="s1">__GHS_VERSION_NUMBER</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GHS_VERSION_NUMBER </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__GHS_VERSION_NUMBER </span><span class="s4">/ </span><span class="s5">10 </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__GHS_VERSION_NUMBER      </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TASKING__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Tasking&quot;</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__VERSION__</span><span class="s4">/</span><span class="s5">1000</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__VERSION__ </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_INTERNAL DEC</span><span class="s4">(</span><span class="s1">__VERSION__</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ORANGEC__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;OrangeC&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__ORANGEC_MAJOR__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__ORANGEC_MINOR__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__ORANGEC_PATCHLEVEL__</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__SCO_VERSION__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;SCO&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ARMCC_VERSION</span><span class="s4">) &amp;&amp; !</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;ARMCC&quot;</span>
+<span class="s2">#if </span><span class="s1">__ARMCC_VERSION </span><span class="s4">&gt;= </span><span class="s5">1000000</span>
+  <span class="s0">/* __ARMCC_VERSION = VRRPPPP */</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__ARMCC_VERSION</span><span class="s4">/</span><span class="s5">1000000</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__ARMCC_VERSION</span><span class="s4">/</span><span class="s5">10000 </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__ARMCC_VERSION     </span><span class="s4">% </span><span class="s5">10000</span><span class="s4">)</span>
+<span class="s2">#else</span>
+  <span class="s0">/* __ARMCC_VERSION = VRPPPP */</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__ARMCC_VERSION</span><span class="s4">/</span><span class="s5">100000</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__ARMCC_VERSION</span><span class="s4">/</span><span class="s5">10000 </span><span class="s4">% </span><span class="s5">10</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__ARMCC_VERSION    </span><span class="s4">% </span><span class="s5">10000</span><span class="s4">)</span>
+<span class="s2">#endif</span>
+
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__apple_build_version__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;AppleClang&quot;</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;MSVC&quot;</span>
+<span class="s2"># endif</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__clang_major__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__clang_minor__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__clang_patchlevel__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+   <span class="s0">/* _MSC_VER = VVRR */</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_TWEAK DEC</span><span class="s4">(</span><span class="s1">__apple_build_version__</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ARMCOMPILER_VERSION</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;ARMClang&quot;</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__ARMCOMPILER_VERSION</span><span class="s4">/</span><span class="s5">1000000</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__ARMCOMPILER_VERSION</span><span class="s4">/</span><span class="s5">10000 </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__ARMCOMPILER_VERSION</span><span class="s4">/</span><span class="s5">100   </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_INTERNAL DEC</span><span class="s4">(</span><span class="s1">__ARMCOMPILER_VERSION</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ti__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;TIClang&quot;</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__ti_major__</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__ti_minor__</span><span class="s4">)</span>
+  <span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__ti_patchlevel__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_INTERNAL DEC</span><span class="s4">(</span><span class="s1">__ti_version__</span><span class="s4">)</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;Clang&quot;</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;MSVC&quot;</span>
+<span class="s2"># endif</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__clang_major__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__clang_minor__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__clang_patchlevel__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+   <span class="s0">/* _MSC_VER = VVRR */</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__LCC__</span><span class="s4">) &amp;&amp; (</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUG__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__MCST__</span><span class="s4">))</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;LCC&quot;</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__LCC__ </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__LCC__ </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__LCC_MINOR__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__LCC_MINOR__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;GNU&quot;</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">SIMULATE_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#   define </span><span class="s1">SIMULATE_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#  endif</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUG__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;GNU&quot;</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">)</span>
+<span class="s2"># else</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__GNUG__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__GNUC_MINOR__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__GNUC_PATCHLEVEL__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;MSVC&quot;</span>
+  <span class="s0">/* _MSC_VER = VVRR */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">/ </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">_MSC_VER </span><span class="s4">% </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_FULL_VER</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">_MSC_VER </span><span class="s4">&gt;= </span><span class="s5">1400</span>
+    <span class="s0">/* _MSC_FULL_VER = VVRRPPPPP */</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">_MSC_FULL_VER </span><span class="s4">% </span><span class="s5">100000</span><span class="s4">)</span>
+<span class="s2">#  else</span>
+    <span class="s0">/* _MSC_FULL_VER = VVRRPPPP */</span>
+<span class="s2">#   define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">_MSC_FULL_VER </span><span class="s4">% </span><span class="s5">10000</span><span class="s4">)</span>
+<span class="s2">#  endif</span>
+<span class="s2"># endif</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_BUILD</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_TWEAK DEC</span><span class="s4">(</span><span class="s1">_MSC_BUILD</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_ADI_COMPILER</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;ADSP&quot;</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__VERSIONNUM__</span><span class="s4">)</span>
+  <span class="s0">/* __VERSIONNUM__ = 0xVVRRPPTT */</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">(</span><span class="s1">__VERSIONNUM__ </span><span class="s4">&gt;&gt; </span><span class="s5">24 </span><span class="s4">&amp; </span><span class="s5">0xFF</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(</span><span class="s1">__VERSIONNUM__ </span><span class="s4">&gt;&gt; </span><span class="s5">16 </span><span class="s4">&amp; </span><span class="s5">0xFF</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__VERSIONNUM__ </span><span class="s4">&gt;&gt; </span><span class="s5">8 </span><span class="s4">&amp; </span><span class="s5">0xFF</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_TWEAK DEC</span><span class="s4">(</span><span class="s1">__VERSIONNUM__ </span><span class="s4">&amp; </span><span class="s5">0xFF</span><span class="s4">)</span>
+<span class="s2">#endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IAR_SYSTEMS_ICC__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IAR_SYSTEMS_ICC</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;IAR&quot;</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__VER__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCARM__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">((</span><span class="s1">__VER__</span><span class="s4">) / </span><span class="s5">1000000</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">(((</span><span class="s1">__VER__</span><span class="s4">) / </span><span class="s5">1000</span><span class="s4">) % </span><span class="s5">1000</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">((</span><span class="s1">__VER__</span><span class="s4">) % </span><span class="s5">1000</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_INTERNAL DEC</span><span class="s4">(</span><span class="s1">__IAR_SYSTEMS_ICC__</span><span class="s4">)</span>
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__VER__</span><span class="s4">) &amp;&amp; (</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCAVR__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRX__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRH850__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRL78__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICC430__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRISCV__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCV850__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICC8051__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCSTM8__</span><span class="s4">))</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MAJOR DEC</span><span class="s4">((</span><span class="s1">__VER__</span><span class="s4">) / </span><span class="s5">100</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_MINOR DEC</span><span class="s4">((</span><span class="s1">__VER__</span><span class="s4">) - (((</span><span class="s1">__VER__</span><span class="s4">) / </span><span class="s5">100</span><span class="s4">)*</span><span class="s5">100</span><span class="s4">))</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_PATCH DEC</span><span class="s4">(</span><span class="s1">__SUBVERSION__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">COMPILER_VERSION_INTERNAL DEC</span><span class="s4">(</span><span class="s1">__IAR_SYSTEMS_ICC__</span><span class="s4">)</span>
+<span class="s2"># endif</span>
+
+
+<span class="s0">/* These compilers are either not known or too old to define an 
+  identification macro.  Try to identify the platform and guess that 
+  it is the native compiler.  */</span>
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__hpux</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__hpua</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;HP&quot;</span>
+
+<span class="s2">#else </span><span class="s0">/* unknown compiler */</span>
+<span class="s2"># define </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2">#endif</span>
+
+<span class="s0">/* Construct the string literal in pieces to prevent the source from 
+   getting matched.  Store it in a pointer rather than an array 
+   because some compilers will just produce instructions to fill the 
+   array rather than assigning a pointer to a static array.  */</span>
+<span class="s6">char const</span><span class="s4">* </span><span class="s1">info_compiler </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;compiler[&quot; </span><span class="s1">COMPILER_ID </span><span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+<span class="s2">#ifdef </span><span class="s1">SIMULATE_ID</span>
+<span class="s6">char const</span><span class="s4">* </span><span class="s1">info_simulate </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;simulate[&quot; </span><span class="s1">SIMULATE_ID </span><span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+<span class="s2">#endif</span>
+
+<span class="s2">#ifdef </span><span class="s1">__QNXNTO__</span>
+<span class="s6">char const</span><span class="s4">* </span><span class="s1">qnxnto </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;qnxnto[]&quot;</span><span class="s4">;</span>
+<span class="s2">#endif</span>
+
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CRAYXT_COMPUTE_LINUX_TARGET</span><span class="s4">)</span>
+<span class="s6">char const </span><span class="s4">*</span><span class="s1">info_cray </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;compiler_wrapper[CrayPrgEnv]&quot;</span><span class="s4">;</span>
+<span class="s2">#endif</span>
+
+<span class="s2">#define </span><span class="s1">STRINGIFY_HELPER</span><span class="s4">(</span><span class="s1">X</span><span class="s4">) </span><span class="s1">#X</span>
+<span class="s2">#define </span><span class="s1">STRINGIFY</span><span class="s4">(</span><span class="s1">X</span><span class="s4">) </span><span class="s1">STRINGIFY_HELPER</span><span class="s4">(</span><span class="s1">X</span><span class="s4">)</span>
+
+<span class="s0">/* Identify known platforms by name.  */</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__linux</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__linux__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">linux</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Linux&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__MSYS__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;MSYS&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CYGWIN__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Cygwin&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__MINGW32__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;MinGW&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__APPLE__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Darwin&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_WIN32</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__WIN32__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">WIN32</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Windows&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__FreeBSD__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__FreeBSD</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;FreeBSD&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__NetBSD__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__NetBSD</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;NetBSD&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__OpenBSD__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__OPENBSD</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;OpenBSD&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__sun</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">sun</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;SunOS&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_AIX</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__AIX</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__AIX__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__aix</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__aix__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;AIX&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__hpux</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__hpux__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;HP-UX&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__HAIKU__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Haiku&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__BeOS</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__BEOS__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_BEOS</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;BeOS&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__QNX__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__QNXNTO__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;QNX&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__tru64</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_tru64</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TRU64__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Tru64&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__riscos</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__riscos__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;RISCos&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__sinix</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__sinix__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__SINIX__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;SINIX&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__UNIX_SV__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;UNIX_SV&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__bsdos__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;BSDOS&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MPRAS</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">MPRAS</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;MP-RAS&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__osf</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__osf__</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;OSF1&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_SCO_SV</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">SCO_SV</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">sco_sv</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;SCO_SV&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ultrix</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ultrix__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_ULTRIX</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;ULTRIX&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__XENIX__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_XENIX</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">XENIX</span><span class="s4">)</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Xenix&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__WATCOMC__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__LINUX__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Linux&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__DOS__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;DOS&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__OS2__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;OS2&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__WINDOWS__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Windows3x&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__VXWORKS__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;VxWorks&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* unknown platform */</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEGRITY</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">INT_178B</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Integrity178&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* regular Integrity */</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;Integrity&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_ADI_COMPILER</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;ADSP&quot;</span>
+
+<span class="s2">#else </span><span class="s0">/* unknown platform */</span>
+<span class="s2"># define </span><span class="s1">PLATFORM_ID</span>
+
+<span class="s2">#endif</span>
+
+<span class="s0">/* For windows compilers MSVC and Intel we can determine 
+   the architecture of the compiler being used.  This is because 
+   the compilers do not have flags that can change the architecture, 
+   but rather depend on which compiler is being used 
+*/</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_WIN32</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_IA64</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;IA64&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_ARM64EC</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARM64EC&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_X64</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_AMD64</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;x64&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_IX86</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;X86&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_ARM64</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARM64&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_ARM</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">_M_ARM </span><span class="s4">== </span><span class="s5">4</span>
+<span class="s2">#   define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARMV4I&quot;</span>
+<span class="s2">#  elif </span><span class="s1">_M_ARM </span><span class="s4">== </span><span class="s5">5</span>
+<span class="s2">#   define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARMV5I&quot;</span>
+<span class="s2">#  else</span>
+<span class="s2">#   define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARMV&quot; </span><span class="s1">STRINGIFY</span><span class="s4">(</span><span class="s1">_M_ARM</span><span class="s4">)</span>
+<span class="s2">#  endif</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_MIPS</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;MIPS&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_SH</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;SHx&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* unknown architecture */</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__WATCOMC__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_I86</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;I86&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_M_IX86</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;X86&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* unknown architecture */</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IAR_SYSTEMS_ICC__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IAR_SYSTEMS_ICC</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCARM__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARM&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRX__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;RX&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRH850__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;RH850&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRL78__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;RL78&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCRISCV__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;RISCV&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCAVR__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;AVR&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICC430__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;MSP430&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCV850__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;V850&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICC8051__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;8051&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ICCSTM8__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;STM8&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* unknown architecture */</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ghs__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__PPC64__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;PPC64&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ppc__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;PPC&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ARM__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARM&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__x86_64__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;x64&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__i386__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;X86&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* unknown architecture */</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ti__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ARM_ARCH</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;Arm&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* unknown architecture */</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TI_COMPILER_VERSION__</span><span class="s4">)</span>
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TI_ARM__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARM&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__MSP430__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;MSP430&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TMS320C28XX__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;TMS320C28x&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TMS320C6X__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_TMS320C6X</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;TMS320C6x&quot;</span>
+
+<span class="s2"># else </span><span class="s0">/* unknown architecture */</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ADSPSHARC__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;SHARC&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ADSPBLACKFIN__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;Blackfin&quot;</span>
+
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__TASKING__</span><span class="s4">)</span>
+
+<span class="s2"># if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CTC__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CPTC__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;TriCore&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CMCS__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;MCS&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CARM__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARM&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CARC__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;ARC&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__C51__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;8051&quot;</span>
+
+<span class="s2"># elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CPCP__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;PCP&quot;</span>
+
+<span class="s2"># else</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;&quot;</span>
+<span class="s2"># endif</span>
+
+<span class="s2">#else</span>
+<span class="s2">#  define </span><span class="s1">ARCHITECTURE_ID</span>
+<span class="s2">#endif</span>
+
+<span class="s0">/* Convert integer to decimal digit literals.  */</span>
+<span class="s2">#define </span><span class="s1">DEC</span><span class="s4">(</span><span class="s1">n</span><span class="s4">)                   </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ (((</span><span class="s1">n</span><span class="s4">) / </span><span class="s5">10000000</span><span class="s4">)%</span><span class="s5">10</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ (((</span><span class="s1">n</span><span class="s4">) / </span><span class="s5">1000000</span><span class="s4">)%</span><span class="s5">10</span><span class="s4">)),  </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ (((</span><span class="s1">n</span><span class="s4">) / </span><span class="s5">100000</span><span class="s4">)%</span><span class="s5">10</span><span class="s4">)),   </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ (((</span><span class="s1">n</span><span class="s4">) / </span><span class="s5">10000</span><span class="s4">)%</span><span class="s5">10</span><span class="s4">)),    </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ (((</span><span class="s1">n</span><span class="s4">) / </span><span class="s5">1000</span><span class="s4">)%</span><span class="s5">10</span><span class="s4">)),     </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ (((</span><span class="s1">n</span><span class="s4">) / </span><span class="s5">100</span><span class="s4">)%</span><span class="s5">10</span><span class="s4">)),      </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ (((</span><span class="s1">n</span><span class="s4">) / </span><span class="s5">10</span><span class="s4">)%</span><span class="s5">10</span><span class="s4">)),       </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+  ((</span><span class="s1">n</span><span class="s4">) % </span><span class="s5">10</span><span class="s4">))</span>
+
+<span class="s0">/* Convert integer to hex digit literals.  */</span>
+<span class="s2">#define </span><span class="s1">HEX</span><span class="s4">(</span><span class="s1">n</span><span class="s4">)             </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)&gt;&gt;</span><span class="s5">28 </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)&gt;&gt;</span><span class="s5">24 </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)&gt;&gt;</span><span class="s5">20 </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)&gt;&gt;</span><span class="s5">16 </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)&gt;&gt;</span><span class="s5">12 </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)&gt;&gt;</span><span class="s5">8  </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)&gt;&gt;</span><span class="s5">4  </span><span class="s4">&amp; </span><span class="s5">0xF</span><span class="s4">)), </span><span class="s1">\ 
+  </span><span class="s4">(</span><span class="s3">'0' </span><span class="s4">+ ((</span><span class="s1">n</span><span class="s4">)     &amp; </span><span class="s5">0xF</span><span class="s4">))</span>
+
+<span class="s0">/* Construct a string literal encoding the version number. */</span>
+<span class="s2">#ifdef </span><span class="s1">COMPILER_VERSION</span>
+<span class="s6">char const</span><span class="s4">* </span><span class="s1">info_version </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;compiler_version[&quot; </span><span class="s1">COMPILER_VERSION </span><span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+
+<span class="s0">/* Construct a string literal encoding the version number components. */</span>
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">COMPILER_VERSION_MAJOR</span><span class="s4">)</span>
+<span class="s6">char const </span><span class="s1">info_version</span><span class="s4">[] = {</span>
+  <span class="s3">'I'</span><span class="s4">, </span><span class="s3">'N'</span><span class="s4">, </span><span class="s3">'F'</span><span class="s4">, </span><span class="s3">'O'</span><span class="s4">, </span><span class="s3">':'</span><span class="s4">,</span>
+  <span class="s3">'c'</span><span class="s4">,</span><span class="s3">'o'</span><span class="s4">,</span><span class="s3">'m'</span><span class="s4">,</span><span class="s3">'p'</span><span class="s4">,</span><span class="s3">'i'</span><span class="s4">,</span><span class="s3">'l'</span><span class="s4">,</span><span class="s3">'e'</span><span class="s4">,</span><span class="s3">'r'</span><span class="s4">,</span><span class="s3">'_'</span><span class="s4">,</span><span class="s3">'v'</span><span class="s4">,</span><span class="s3">'e'</span><span class="s4">,</span><span class="s3">'r'</span><span class="s4">,</span><span class="s3">'s'</span><span class="s4">,</span><span class="s3">'i'</span><span class="s4">,</span><span class="s3">'o'</span><span class="s4">,</span><span class="s3">'n'</span><span class="s4">,</span><span class="s3">'['</span><span class="s4">,</span>
+  <span class="s1">COMPILER_VERSION_MAJOR</span><span class="s4">,</span>
+<span class="s2"># ifdef </span><span class="s1">COMPILER_VERSION_MINOR</span>
+  <span class="s3">'.'</span><span class="s4">, </span><span class="s1">COMPILER_VERSION_MINOR</span><span class="s4">,</span>
+<span class="s2">#  ifdef </span><span class="s1">COMPILER_VERSION_PATCH</span>
+   <span class="s3">'.'</span><span class="s4">, </span><span class="s1">COMPILER_VERSION_PATCH</span><span class="s4">,</span>
+<span class="s2">#   ifdef </span><span class="s1">COMPILER_VERSION_TWEAK</span>
+    <span class="s3">'.'</span><span class="s4">, </span><span class="s1">COMPILER_VERSION_TWEAK</span><span class="s4">,</span>
+<span class="s2">#   endif</span>
+<span class="s2">#  endif</span>
+<span class="s2"># endif</span>
+  <span class="s3">']'</span><span class="s4">,</span><span class="s3">'</span><span class="s6">\0</span><span class="s3">'</span><span class="s4">};</span>
+<span class="s2">#endif</span>
+
+<span class="s0">/* Construct a string literal encoding the internal version number. */</span>
+<span class="s2">#ifdef </span><span class="s1">COMPILER_VERSION_INTERNAL</span>
+<span class="s6">char const </span><span class="s1">info_version_internal</span><span class="s4">[] = {</span>
+  <span class="s3">'I'</span><span class="s4">, </span><span class="s3">'N'</span><span class="s4">, </span><span class="s3">'F'</span><span class="s4">, </span><span class="s3">'O'</span><span class="s4">, </span><span class="s3">':'</span><span class="s4">,</span>
+  <span class="s3">'c'</span><span class="s4">,</span><span class="s3">'o'</span><span class="s4">,</span><span class="s3">'m'</span><span class="s4">,</span><span class="s3">'p'</span><span class="s4">,</span><span class="s3">'i'</span><span class="s4">,</span><span class="s3">'l'</span><span class="s4">,</span><span class="s3">'e'</span><span class="s4">,</span><span class="s3">'r'</span><span class="s4">,</span><span class="s3">'_'</span><span class="s4">,</span><span class="s3">'v'</span><span class="s4">,</span><span class="s3">'e'</span><span class="s4">,</span><span class="s3">'r'</span><span class="s4">,</span><span class="s3">'s'</span><span class="s4">,</span><span class="s3">'i'</span><span class="s4">,</span><span class="s3">'o'</span><span class="s4">,</span><span class="s3">'n'</span><span class="s4">,</span><span class="s3">'_'</span><span class="s4">,</span>
+  <span class="s3">'i'</span><span class="s4">,</span><span class="s3">'n'</span><span class="s4">,</span><span class="s3">'t'</span><span class="s4">,</span><span class="s3">'e'</span><span class="s4">,</span><span class="s3">'r'</span><span class="s4">,</span><span class="s3">'n'</span><span class="s4">,</span><span class="s3">'a'</span><span class="s4">,</span><span class="s3">'l'</span><span class="s4">,</span><span class="s3">'['</span><span class="s4">,</span>
+  <span class="s1">COMPILER_VERSION_INTERNAL</span><span class="s4">,</span><span class="s3">']'</span><span class="s4">,</span><span class="s3">'</span><span class="s6">\0</span><span class="s3">'</span><span class="s4">};</span>
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">COMPILER_VERSION_INTERNAL_STR</span><span class="s4">)</span>
+<span class="s6">char const</span><span class="s4">* </span><span class="s1">info_version_internal </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;compiler_version_internal[&quot; </span><span class="s1">COMPILER_VERSION_INTERNAL_STR </span><span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+<span class="s2">#endif</span>
+
+<span class="s0">/* Construct a string literal encoding the version number components. */</span>
+<span class="s2">#ifdef </span><span class="s1">SIMULATE_VERSION_MAJOR</span>
+<span class="s6">char const </span><span class="s1">info_simulate_version</span><span class="s4">[] = {</span>
+  <span class="s3">'I'</span><span class="s4">, </span><span class="s3">'N'</span><span class="s4">, </span><span class="s3">'F'</span><span class="s4">, </span><span class="s3">'O'</span><span class="s4">, </span><span class="s3">':'</span><span class="s4">,</span>
+  <span class="s3">'s'</span><span class="s4">,</span><span class="s3">'i'</span><span class="s4">,</span><span class="s3">'m'</span><span class="s4">,</span><span class="s3">'u'</span><span class="s4">,</span><span class="s3">'l'</span><span class="s4">,</span><span class="s3">'a'</span><span class="s4">,</span><span class="s3">'t'</span><span class="s4">,</span><span class="s3">'e'</span><span class="s4">,</span><span class="s3">'_'</span><span class="s4">,</span><span class="s3">'v'</span><span class="s4">,</span><span class="s3">'e'</span><span class="s4">,</span><span class="s3">'r'</span><span class="s4">,</span><span class="s3">'s'</span><span class="s4">,</span><span class="s3">'i'</span><span class="s4">,</span><span class="s3">'o'</span><span class="s4">,</span><span class="s3">'n'</span><span class="s4">,</span><span class="s3">'['</span><span class="s4">,</span>
+  <span class="s1">SIMULATE_VERSION_MAJOR</span><span class="s4">,</span>
+<span class="s2"># ifdef </span><span class="s1">SIMULATE_VERSION_MINOR</span>
+  <span class="s3">'.'</span><span class="s4">, </span><span class="s1">SIMULATE_VERSION_MINOR</span><span class="s4">,</span>
+<span class="s2">#  ifdef </span><span class="s1">SIMULATE_VERSION_PATCH</span>
+   <span class="s3">'.'</span><span class="s4">, </span><span class="s1">SIMULATE_VERSION_PATCH</span><span class="s4">,</span>
+<span class="s2">#   ifdef </span><span class="s1">SIMULATE_VERSION_TWEAK</span>
+    <span class="s3">'.'</span><span class="s4">, </span><span class="s1">SIMULATE_VERSION_TWEAK</span><span class="s4">,</span>
+<span class="s2">#   endif</span>
+<span class="s2">#  endif</span>
+<span class="s2"># endif</span>
+  <span class="s3">']'</span><span class="s4">,</span><span class="s3">'</span><span class="s6">\0</span><span class="s3">'</span><span class="s4">};</span>
+<span class="s2">#endif</span>
+
+<span class="s0">/* Construct the string literal in pieces to prevent the source from 
+   getting matched.  Store it in a pointer rather than an array 
+   because some compilers will just produce instructions to fill the 
+   array rather than assigning a pointer to a static array.  */</span>
+<span class="s6">char const</span><span class="s4">* </span><span class="s1">info_platform </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;platform[&quot; </span><span class="s1">PLATFORM_ID </span><span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+<span class="s6">char const</span><span class="s4">* </span><span class="s1">info_arch </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;arch[&quot; </span><span class="s1">ARCHITECTURE_ID </span><span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+
+
+
+<span class="s2">#define </span><span class="s1">CXX_STD_98 </span><span class="s5">199711L</span>
+<span class="s2">#define </span><span class="s1">CXX_STD_11 </span><span class="s5">201103L</span>
+<span class="s2">#define </span><span class="s1">CXX_STD_14 </span><span class="s5">201402L</span>
+<span class="s2">#define </span><span class="s1">CXX_STD_17 </span><span class="s5">201703L</span>
+<span class="s2">#define </span><span class="s1">CXX_STD_20 </span><span class="s5">202002L</span>
+<span class="s2">#define </span><span class="s1">CXX_STD_23 </span><span class="s5">202302L</span>
+
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSVC_LANG</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">_MSVC_LANG </span><span class="s4">&gt; </span><span class="s1">CXX_STD_17</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD _MSVC_LANG</span>
+<span class="s2">#  elif </span><span class="s1">_MSVC_LANG </span><span class="s4">== </span><span class="s1">CXX_STD_17 </span><span class="s4">&amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__cpp_aggregate_paren_init</span><span class="s4">)</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_20</span>
+<span class="s2">#  elif </span><span class="s1">_MSVC_LANG </span><span class="s4">&gt; </span><span class="s1">CXX_STD_14 </span><span class="s4">&amp;&amp; </span><span class="s1">__cplusplus </span><span class="s4">&gt; </span><span class="s1">CXX_STD_17</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_20</span>
+<span class="s2">#  elif </span><span class="s1">_MSVC_LANG </span><span class="s4">&gt; </span><span class="s1">CXX_STD_14</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_17</span>
+<span class="s2">#  elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_CXX11_MODE__</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__cpp_aggregate_nsdmi</span><span class="s4">)</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_14</span>
+<span class="s2">#  elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_CXX11_MODE__</span><span class="s4">)</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_11</span>
+<span class="s2">#  else</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_98</span>
+<span class="s2">#  endif</span>
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSC_VER</span><span class="s4">) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">_MSVC_LANG</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">_MSVC_LANG </span><span class="s4">&gt; </span><span class="s1">__cplusplus</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD _MSVC_LANG</span>
+<span class="s2">#  else</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD __cplusplus</span>
+<span class="s2">#  endif</span>
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__NVCOMPILER</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">__cplusplus </span><span class="s4">== </span><span class="s1">CXX_STD_17 </span><span class="s4">&amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__cpp_aggregate_paren_init</span><span class="s4">)</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_20</span>
+<span class="s2">#  else</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD __cplusplus</span>
+<span class="s2">#  endif</span>
+<span class="s2">#elif </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__INTEL_COMPILER</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__PGI</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">__cplusplus </span><span class="s4">== </span><span class="s1">CXX_STD_11 </span><span class="s4">&amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__cpp_namespace_attributes</span><span class="s4">)</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_17</span>
+<span class="s2">#  elif </span><span class="s1">__cplusplus </span><span class="s4">== </span><span class="s1">CXX_STD_11 </span><span class="s4">&amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__cpp_aggregate_nsdmi</span><span class="s4">)</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_14</span>
+<span class="s2">#  else</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD __cplusplus</span>
+<span class="s2">#  endif</span>
+<span class="s2">#elif </span><span class="s4">(</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__IBMCPP__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__ibmxl__</span><span class="s4">)) &amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__linux__</span><span class="s4">)</span>
+<span class="s2">#  if </span><span class="s1">__cplusplus </span><span class="s4">== </span><span class="s1">CXX_STD_11 </span><span class="s4">&amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__cpp_aggregate_nsdmi</span><span class="s4">)</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD CXX_STD_14</span>
+<span class="s2">#  else</span>
+<span class="s2">#    define </span><span class="s1">CXX_STD __cplusplus</span>
+<span class="s2">#  endif</span>
+<span class="s2">#elif </span><span class="s1">__cplusplus </span><span class="s4">== </span><span class="s5">1 </span><span class="s4">&amp;&amp; </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GXX_EXPERIMENTAL_CXX0X__</span><span class="s4">)</span>
+<span class="s2">#  define </span><span class="s1">CXX_STD CXX_STD_11</span>
+<span class="s2">#else</span>
+<span class="s2">#  define </span><span class="s1">CXX_STD __cplusplus</span>
+<span class="s2">#endif</span>
+
+<span class="s6">const char</span><span class="s4">* </span><span class="s1">info_language_standard_default </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;standard_default[&quot;</span>
+<span class="s2">#if </span><span class="s1">CXX_STD </span><span class="s4">&gt; </span><span class="s1">CXX_STD_23</span>
+  <span class="s3">&quot;26&quot;</span>
+<span class="s2">#elif </span><span class="s1">CXX_STD </span><span class="s4">&gt; </span><span class="s1">CXX_STD_20</span>
+  <span class="s3">&quot;23&quot;</span>
+<span class="s2">#elif </span><span class="s1">CXX_STD </span><span class="s4">&gt; </span><span class="s1">CXX_STD_17</span>
+  <span class="s3">&quot;20&quot;</span>
+<span class="s2">#elif </span><span class="s1">CXX_STD </span><span class="s4">&gt; </span><span class="s1">CXX_STD_14</span>
+  <span class="s3">&quot;17&quot;</span>
+<span class="s2">#elif </span><span class="s1">CXX_STD </span><span class="s4">&gt; </span><span class="s1">CXX_STD_11</span>
+  <span class="s3">&quot;14&quot;</span>
+<span class="s2">#elif </span><span class="s1">CXX_STD </span><span class="s4">&gt;= </span><span class="s1">CXX_STD_11</span>
+  <span class="s3">&quot;11&quot;</span>
+<span class="s2">#else</span>
+  <span class="s3">&quot;98&quot;</span>
+<span class="s2">#endif</span>
+<span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+
+<span class="s6">const char</span><span class="s4">* </span><span class="s1">info_language_extensions_default </span><span class="s4">= </span><span class="s3">&quot;INFO&quot; &quot;:&quot; &quot;extensions_default[&quot;</span>
+<span class="s2">#if </span><span class="s4">(</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__clang__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__GNUC__</span><span class="s4">) || </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__xlC__</span><span class="s4">) ||           </span><span class="s1">\ 
+     defined</span><span class="s4">(</span><span class="s1">__TI_COMPILER_VERSION__</span><span class="s4">)) &amp;&amp;                                     </span><span class="s1">\ 
+  </span><span class="s4">!</span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__STRICT_ANSI__</span><span class="s4">)</span>
+  <span class="s3">&quot;ON&quot;</span>
+<span class="s2">#else</span>
+  <span class="s3">&quot;OFF&quot;</span>
+<span class="s2">#endif</span>
+<span class="s3">&quot;]&quot;</span><span class="s4">;</span>
+
+<span class="s0">/*--------------------------------------------------------------------------*/</span>
+
+<span class="s6">int </span><span class="s1">main</span><span class="s4">(</span><span class="s6">int </span><span class="s1">argc</span><span class="s4">, </span><span class="s6">char</span><span class="s4">* </span><span class="s1">argv</span><span class="s4">[])</span>
+<span class="s4">{</span>
+  <span class="s6">int </span><span class="s1">require </span><span class="s4">= </span><span class="s5">0</span><span class="s4">;</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_compiler</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_platform</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_arch</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+<span class="s2">#ifdef </span><span class="s1">COMPILER_VERSION_MAJOR</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_version</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+<span class="s2">#endif</span>
+<span class="s2">#ifdef </span><span class="s1">COMPILER_VERSION_INTERNAL</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_version_internal</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+<span class="s2">#endif</span>
+<span class="s2">#ifdef </span><span class="s1">SIMULATE_ID</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_simulate</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+<span class="s2">#endif</span>
+<span class="s2">#ifdef </span><span class="s1">SIMULATE_VERSION_MAJOR</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_simulate_version</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+<span class="s2">#endif</span>
+<span class="s2">#if </span><span class="s1">defined</span><span class="s4">(</span><span class="s1">__CRAYXT_COMPUTE_LINUX_TARGET</span><span class="s4">)</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_cray</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+<span class="s2">#endif</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_language_standard_default</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+  <span class="s1">require </span><span class="s4">+= </span><span class="s1">info_language_extensions_default</span><span class="s4">[</span><span class="s1">argc</span><span class="s4">];</span>
+  <span class="s4">(</span><span class="s6">void</span><span class="s4">)</span><span class="s1">argv</span><span class="s4">;</span>
+  <span class="s6">return </span><span class="s1">require</span><span class="s4">;</span>
+<span class="s4">}</span>
+</pre>
+</body>
+</html>

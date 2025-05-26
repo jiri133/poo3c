@@ -86,14 +86,14 @@ public:
 
     Player(const std::string &name, int size, int speed, int growthFactor = 1): Fish(name, size, speed, growthFactor){}
 
-    ~Player();
+    ~Player() override;
 
     bool canEat(const Fish &other) const override
     {
         return size > other.getSize();
     }
 
-    void grow()
+    void grow() override
     {
         this->Fish::grow();
     }
@@ -114,7 +114,7 @@ class NPCFish : public Fish
         return size > other.getSize();
     }
 
-    void grow()
+    void grow()override
     {
         this->Fish::grow();
     }

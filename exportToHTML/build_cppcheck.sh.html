@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>build_cppcheck.sh</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #bcbec4; font-weight: bold;}
+.s1 { color: #bcbec4;}
+.s2 { color: #7a7e85;}
+.s3 { color: #bcbec4;}
+.s4 { color: #cf8e6d;}
+.s5 { color: #6aab73;}
+.s6 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+build_cppcheck.sh</font>
+</center></td></tr></table>
+<pre><span class="s0">#!/usr/bin/bash</span>
+
+<span class="s2"># default values</span>
+<span class="s1">CPPCHECK_VER=2.14.2   </span><span class="s2"># NOTE: consider updating this value in .github/workflows/cmake.yml:47 when changing this value</span>
+<span class="s1">CMAKE_BUILD_DIR=build</span>
+<span class="s1">CMAKE_OPTS=</span><span class="s3">()         </span><span class="s2"># example for CLI: -o &quot;-DCMAKE_INSTALL_PREFIX=~/.local/ -DFILESDIR=~/.local/share/Cppcheck&quot;</span>
+
+<span class="s4">while </span><span class="s1">getopts </span><span class="s5">&quot;:b:o:v:&quot; </span><span class="s1">opt; </span><span class="s4">do</span>
+  <span class="s4">case </span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">opt</span><span class="s3">}</span><span class="s5">&quot; </span><span class="s4">in</span>
+    <span class="s1">b</span><span class="s3">) </span><span class="s1">CMAKE_BUILD_DIR=</span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">OPTARG</span><span class="s3">}</span><span class="s5">&quot;</span>
+    <span class="s4">;;</span>
+    <span class="s1">o</span><span class="s3">) </span><span class="s1">IFS=</span><span class="s5">&quot; &quot; </span><span class="s1">read -r -a CMAKE_OPTS </span><span class="s3">&lt;&lt;&lt; </span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">OPTARG</span><span class="s3">}</span><span class="s5">&quot;</span>
+    <span class="s4">;;</span>
+    <span class="s1">v</span><span class="s3">) </span><span class="s1">CPPCHECK_VER=</span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">OPTARG</span><span class="s3">}</span><span class="s5">&quot;</span>
+    <span class="s4">;;</span>
+    <span class="s1">*</span><span class="s3">) </span><span class="s1">printf </span><span class="s5">&quot;Unknown option %s; available options: \n\ 
+        -b (build dir)\n\ 
+        -o (cmake opts)\n\ 
+        -v (cppcheck version)\n&quot; &quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">opt</span><span class="s3">}</span><span class="s5">&quot;</span>
+      <span class="s1">exit </span><span class="s6">1</span>
+    <span class="s4">;;</span>
+  <span class="s4">esac</span>
+<span class="s4">done</span>
+
+
+<span class="s1">wget </span><span class="s5">&quot;https://github.com/danmar/cppcheck/archive/</span><span class="s4">$</span><span class="s3">{</span><span class="s1">CPPCHECK_VER</span><span class="s3">}</span><span class="s5">.zip&quot;</span>
+<span class="s1">unzip -q </span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">CPPCHECK_VER</span><span class="s3">}</span><span class="s5">.zip&quot;</span>
+<span class="s1">rm </span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">CPPCHECK_VER</span><span class="s3">}</span><span class="s5">.zip&quot;</span>
+<span class="s1">mv </span><span class="s5">&quot;cppcheck-</span><span class="s4">$</span><span class="s3">{</span><span class="s1">CPPCHECK_VER</span><span class="s3">}</span><span class="s5">&quot; </span><span class="s1">cppcheck</span>
+
+<span class="s1">cd cppcheck </span><span class="s4">|| </span><span class="s3">{ </span><span class="s1">echo </span><span class="s5">&quot;Eroare cd&quot;</span><span class="s1">; exit </span><span class="s6">1</span><span class="s1">; </span><span class="s3">}</span>
+<span class="s1">cmake -S . -B </span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">CMAKE_BUILD_DIR</span><span class="s3">}</span><span class="s5">&quot; </span><span class="s1">-DEXTERNALS_AS_SYSTEM=ON </span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">CMAKE_OPTS</span><span class="s3">[</span><span class="s1">@</span><span class="s3">]}</span><span class="s5">&quot;</span>
+<span class="s1">cmake --build </span><span class="s5">&quot;</span><span class="s4">$</span><span class="s3">{</span><span class="s1">CMAKE_BUILD_DIR</span><span class="s3">}</span><span class="s5">&quot; </span><span class="s1">-j6</span>
+</pre>
+</body>
+</html>

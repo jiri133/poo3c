@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>Aquarium.cpp</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #bcbec4;}
+.s2 { color: #b3ae60;}
+.s3 { color: #6aab73;}
+.s4 { color: #bcbec4;}
+.s5 { color: #cf8e6d;}
+.s6 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Aquarium.cpp</font>
+</center></td></tr></table>
+<pre><span class="s0">//</span>
+<span class="s0">// Created by MINALP1 on 5/26/2025.</span>
+<span class="s0">//</span>
+
+<span class="s2">#include </span><span class="s3">&quot;Aquarium.h&quot;</span>
+<span class="s2">#include </span><span class="s3">&lt;iostream&gt;</span>
+<span class="s2">#include </span><span class="s3">&lt;vector&gt;</span>
+<span class="s2">#include </span><span class="s3">&quot;Fish.h&quot;</span>
+<span class="s2">#include </span><span class="s3">&quot;Reward.h&quot;</span>
+<span class="s2">#include </span><span class="s3">&lt;memory&gt;</span>
+
+
+
+
+
+     <span class="s1">Aquarium::Aquarium</span><span class="s4">(</span><span class="s5">const </span><span class="s1">Aquarium </span><span class="s4">&amp;</span><span class="s1">a</span><span class="s4">)</span>
+        <span class="s1">: fishies</span><span class="s4">(</span><span class="s1">a</span><span class="s4">.</span><span class="s1">fishies</span><span class="s4">), </span><span class="s1">rewards</span><span class="s4">(</span><span class="s1">a</span><span class="s4">.</span><span class="s1">rewards</span><span class="s4">)</span>
+    <span class="s4">{</span>
+    <span class="s4">}</span>
+
+    <span class="s1">Aquarium </span><span class="s4">&amp;</span><span class="s1">Aquarium::</span><span class="s5">operator</span><span class="s4">=(</span><span class="s5">const </span><span class="s1">Aquarium </span><span class="s4">&amp;</span><span class="s1">other</span><span class="s4">)</span>
+    <span class="s4">{</span>
+        <span class="s5">if </span><span class="s4">(</span><span class="s5">this </span><span class="s4">!= &amp;</span><span class="s1">other</span><span class="s4">)</span>
+        <span class="s4">{</span>
+            <span class="s1">fishies </span><span class="s4">= </span><span class="s1">other</span><span class="s4">.</span><span class="s1">fishies</span><span class="s4">;</span>
+            <span class="s1">rewards </span><span class="s4">= </span><span class="s1">other</span><span class="s4">.</span><span class="s1">rewards</span><span class="s4">;</span>
+        <span class="s4">}</span>
+        <span class="s5">return </span><span class="s4">*</span><span class="s5">this</span><span class="s4">;</span>
+    <span class="s4">}</span>
+
+
+
+
+
+    <span class="s5">void </span><span class="s1">Aquarium::addFish</span><span class="s4">(</span><span class="s5">const </span><span class="s1">Fish </span><span class="s4">&amp;</span><span class="s1">fish</span><span class="s4">) { </span><span class="s1">fishies</span><span class="s4">.</span><span class="s1">push_back</span><span class="s4">(</span><span class="s1">fish</span><span class="s4">); }</span>
+    <span class="s5">const </span><span class="s1">std::vector</span><span class="s4">&lt;</span><span class="s1">Fish</span><span class="s4">&gt; &amp;</span><span class="s1">Aquarium::getFishies</span><span class="s4">() </span><span class="s5">const </span><span class="s4">{ </span><span class="s5">return </span><span class="s1">fishies</span><span class="s4">; }</span>
+
+    <span class="s5">void </span><span class="s1">Aquarium::removeFish</span><span class="s4">(</span><span class="s5">int </span><span class="s1">index</span><span class="s4">)</span>
+    <span class="s4">{</span>
+        <span class="s5">if </span><span class="s4">(</span><span class="s1">index </span><span class="s4">&gt;= </span><span class="s6">0 </span><span class="s4">&amp;&amp; </span><span class="s1">index </span><span class="s4">&lt; </span><span class="s5">static_cast</span><span class="s4">&lt;</span><span class="s5">int</span><span class="s4">&gt;(</span><span class="s1">fishies</span><span class="s4">.</span><span class="s1">size</span><span class="s4">()))</span>
+        <span class="s4">{</span>
+            <span class="s1">fishies</span><span class="s4">.</span><span class="s1">erase</span><span class="s4">(</span><span class="s1">fishies</span><span class="s4">.</span><span class="s1">begin</span><span class="s4">() + </span><span class="s1">index</span><span class="s4">);</span>
+        <span class="s4">}</span>
+    <span class="s4">}</span>
+
+    <span class="s1">std::ostream </span><span class="s4">&amp;</span><span class="s5">operator</span><span class="s4">&lt;&lt;(</span><span class="s1">std::ostream </span><span class="s4">&amp;</span><span class="s1">os</span><span class="s4">, </span><span class="s5">const </span><span class="s1">Aquarium </span><span class="s4">&amp;</span><span class="s1">aquarium</span><span class="s4">)</span>
+    <span class="s4">{</span>
+        <span class="s1">os </span><span class="s4">&lt;&lt; </span><span class="s3">&quot;Acvariul contine urmatorii pesti:</span><span class="s5">\n</span><span class="s3">&quot;</span><span class="s4">;</span>
+        <span class="s5">const auto </span><span class="s4">&amp;</span><span class="s1">fishList </span><span class="s4">= </span><span class="s1">aquarium</span><span class="s4">.</span><span class="s1">getFishies</span><span class="s4">(); </span><span class="s0">// Accesam lista de pesti</span>
+        <span class="s5">if </span><span class="s4">(</span><span class="s1">fishList</span><span class="s4">.</span><span class="s1">empty</span><span class="s4">())</span>
+        <span class="s4">{</span>
+            <span class="s1">os </span><span class="s4">&lt;&lt; </span><span class="s3">&quot;Nu exista pesti in acvariu.</span><span class="s5">\n</span><span class="s3">&quot;</span><span class="s4">;</span>
+        <span class="s4">} </span><span class="s5">else</span>
+        <span class="s4">{</span>
+            <span class="s5">int </span><span class="s1">cnt </span><span class="s4">= </span><span class="s6">0</span><span class="s4">;</span>
+            <span class="s5">for </span><span class="s4">(</span><span class="s5">const auto </span><span class="s4">&amp;</span><span class="s1">fish: fishList</span><span class="s4">)</span>
+            <span class="s4">{</span>
+                <span class="s1">os </span><span class="s4">&lt;&lt; </span><span class="s1">cnt </span><span class="s4">&lt;&lt; </span><span class="s3">'.' </span><span class="s4">&lt;&lt; </span><span class="s1">fish </span><span class="s4">&lt;&lt; </span><span class="s1">std::endl</span><span class="s4">;</span>
+                <span class="s0">// Afișăm fiecare pește folosind operatorul &lt;&lt; definit pentru Fish</span>
+                <span class="s4">++</span><span class="s1">cnt</span><span class="s4">;</span>
+            <span class="s4">}</span>
+        <span class="s4">}</span>
+        <span class="s5">return </span><span class="s1">os</span><span class="s4">;</span>
+    <span class="s4">}</span>
+
+
+    <span class="s5">void </span><span class="s1">Aquarium::addReward</span><span class="s4">( </span><span class="s1">std::shared_ptr</span><span class="s4">&lt;</span><span class="s1">Reward</span><span class="s4">&gt; &amp;</span><span class="s1">r</span><span class="s4">)</span>
+    <span class="s4">{</span>
+        <span class="s1">rewards</span><span class="s4">.</span><span class="s1">push_back</span><span class="s4">(</span><span class="s1">r</span><span class="s4">);</span>
+    <span class="s4">}</span>
+
+    <span class="s1">std::vector</span><span class="s4">&lt;</span><span class="s1">std::shared_ptr</span><span class="s4">&lt;</span><span class="s1">Reward</span><span class="s4">&gt;&gt; &amp;</span><span class="s1">Aquarium::getRewards</span><span class="s4">()  { </span><span class="s5">return </span><span class="s1">rewards</span><span class="s4">; }</span>
+
+    <span class="s5">void </span><span class="s1">Aquarium::removeReward</span><span class="s4">(</span><span class="s5">int </span><span class="s1">index</span><span class="s4">)</span>
+    <span class="s4">{</span>
+        <span class="s5">if </span><span class="s4">(</span><span class="s1">index </span><span class="s4">&gt;= </span><span class="s6">0 </span><span class="s4">&amp;&amp; </span><span class="s1">index </span><span class="s4">&lt; </span><span class="s5">static_cast</span><span class="s4">&lt;</span><span class="s5">int</span><span class="s4">&gt;(</span><span class="s1">rewards</span><span class="s4">.</span><span class="s1">size</span><span class="s4">()))</span>
+        <span class="s4">{</span>
+            <span class="s1">rewards</span><span class="s4">.</span><span class="s1">erase</span><span class="s4">(</span><span class="s1">rewards</span><span class="s4">.</span><span class="s1">begin</span><span class="s4">() + </span><span class="s1">index</span><span class="s4">);</span>
+        <span class="s4">}</span>
+    <span class="s4">}</span>
+    <span class="s1">Aquarium::~Aquarium</span><span class="s4">(){}</span>
+
+
+</pre>
+</body>
+</html>

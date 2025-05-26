@@ -1,0 +1,32 @@
+<html>
+<head>
+<title>DetectLibcpp.cmake</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #ffc66d;}
+.s4 { color: #6aab73;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+DetectLibcpp.cmake</font>
+</center></td></tr></table>
+<pre><span class="s0">function</span><span class="s1">(detect_libcpp)</span>
+    <span class="s3">set</span><span class="s1">(OLD_CMAKE_CXX_FLAGS </span><span class="s0">${</span><span class="s1">CMAKE_CXX_FLAGS</span><span class="s0">}</span><span class="s1">)</span>
+    <span class="s3">set</span><span class="s1">(CMAKE_CXX_FLAGS </span><span class="s4">&quot;</span><span class="s0">${</span><span class="s1">CMAKE_CXX_FLAGS</span><span class="s0">} </span><span class="s1">-stdlib=libc++</span><span class="s4">&quot;</span><span class="s1">)</span>
+    <span class="s3">set</span><span class="s1">(TEST_STDLIB_SRC [=[</span>
+    <span class="s1">#include &lt;iostream&gt; 
+    int main() {} 
+    ]=])</span>
+    <span class="s3">try_compile</span><span class="s1">(HAS_LIBCPP SOURCE_FROM_CONTENT test_stdlib.cpp </span><span class="s0">${</span><span class="s1">TEST_STDLIB_SRC</span><span class="s0">}</span><span class="s1">)</span>
+    <span class="s3">set</span><span class="s1">(CMAKE_CXX_FLAGS </span><span class="s0">${</span><span class="s1">OLD_CMAKE_CXX_FLAGS</span><span class="s0">}</span><span class="s1">)</span>
+    <span class="s3">unset</span><span class="s1">(OLD_CMAKE_CXX_FLAGS)</span>
+<span class="s0">endfunction</span><span class="s1">()</span>
+</pre>
+</body>
+</html>
