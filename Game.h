@@ -210,7 +210,8 @@ public:
 
     void chooseFishToAttack()
     {
-        const auto &fishList = aquarium.getFishies();
+        const auto& fishesInAquarium = aquarium.getFishies();
+
         std::cout << "Vrei sa vezi pestii ramasi in acvariu?(y/n)" << std::endl;
         char answ;
         std::cin >> answ;
@@ -221,67 +222,60 @@ public:
             switch (answ)
             {
                 case 'y':
-                {
                     displayState();
-                    ok = 0;
-                    break;
-                }
+                ok = 0;
+                break;
                 case 'n':
-                {
                     ok = 0;
-                    break;
-                }
+                break;
                 default:
-                {
-                    std::cout << "ai introdus o valoare gresita, te rog reincearca:" << std::endl;
-                    std::cin >> answ;
-                    break;
-                }
+                    std::cout << "Ai introdus o valoare gresita, te rog reincearca:" << std::endl;
+                std::cin >> answ;
+                break;
             }
         }
 
         std::cout << "Alege indexul unui peste de atacat: " << std::endl;
         int idx;
 
-
         while (true)
         {
             std::cin >> idx;
             if (std::cin.fail())
             {
-                std::cin.clear(); // sterge starea de eroare
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // arunca ce a ramas în buffer
-                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << fishList.size() - 1 << ": " <<
-                        std::endl;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Input invalid! Te rog introdu un numar intre 0 si " << fishesInAquarium.size() - 1 << ": " << std::endl;
                 continue;
             }
-            if (idx >= 0 && idx < static_cast<int>(fishList.size()))
+            if (idx >= 0 && idx < static_cast<int>(fishesInAquarium.size()))
             {
-                break; // index corect, ieșim din while
-            } else
+                break;
+            }
+            else
             {
-                std::cout << "Index invalid! Introdu un numar intre 0 si " << fishList.size() - 1 << ": " <<
-                        std::endl;
+                std::cout << "Index invalid! Introdu un numar intre 0 si " << fishesInAquarium.size() - 1 << ": " << std::endl;
             }
         }
 
-
-        if (idx >= 0 && idx < static_cast<int>(fishList.size()))
+        if (idx >= 0 && idx < static_cast<int>(fishesInAquarium.size()))
         {
-            if (player->canEat(*fishList[idx]))
+            if (player->canEat(*fishesInAquarium[idx]))
             {
-                playTurn(*fishList[idx]);
+                playTurn(*fishesInAquarium[idx]);
                 aquarium.removeFish(idx);
-            } else
+            }
+            else
             {
-                playTurn(*fishList[idx]);
-                if (isInvincible == true)
+                playTurn(*fishesInAquarium[idx]);
+                if (isInvincible)
                 {
                     aquarium.removeFish(idx);
                     isInvincible = false;
                 }
             }
-        } else
+        }
+        else
         {
             std::cout << "Index invalid!" << std::endl;
         }
