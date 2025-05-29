@@ -151,7 +151,7 @@ public:
                 {
 
                     // Verificăm dacă e NPCPlayer_mare și declanșăm provocarea
-                    if (const auto *mare = dynamic_cast<NPCPlayer_mare*>(npcFish))
+                    if ( auto *mare = dynamic_cast<NPCPlayer_mare*>(npcFish))
                     {
                         int scorInitial = score;
                         if (mare->triggerChallange(*dynamic_cast<Player*>(player.get()), score))
