@@ -181,7 +181,7 @@ public:
                 Logger::logEvent(player->getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
             }
         }
-        catch (exceptie_mortala &err)
+        catch (exceptie_mortala &)
         {
             if (isDoublePoints)
                 Logger::logEvent("DOUBLEPOINTS! AI PRIMIT DUBLU DE PUNCTE PENTRU ACEST PESTISOR!");
