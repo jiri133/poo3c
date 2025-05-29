@@ -17,7 +17,7 @@ class exceptie: public std::runtime_error
 {
     public:
     using std::runtime_error::runtime_error;
-    explicit exceptie(std::string msg): std::runtime_error(msg)
+    explicit exceptie(const std::string msg): std::runtime_error(msg)
     {
 
     }
@@ -141,7 +141,7 @@ public:
 class NPCFish : public Fish
 {
 protected:
-    int EscapeChance = 50;
+    int escapeChance = 50;
     int ActualChance = 0;
 
 public:
@@ -159,7 +159,7 @@ public:
 
     virtual bool attemptEscape(const Player &player)
     {
-        ActualChance = EscapeChance - (player.getSize() - this->getSize()) * 10;
+        ActualChance = escapeChance - (player.getSize() - this->getSize()) * 10;
         return ActualChance > rand() % 100;
     }
 
@@ -174,7 +174,7 @@ public:
 class NPCPlayer_mic : public NPCFish
 {
 private:
-    int ActualChance = 0;
+    int actualChance = 0;
     int EscapeChance = 60;
     bool isScared = false;
 
@@ -183,8 +183,8 @@ public:
 
     bool attemptEscape(const Player &player) override
     {
-        ActualChance = EscapeChance - (player.getSize() - this->getSize()) * 10;
-        return ActualChance > rand() % 100;
+        actualChance = EscapeChance - (player.getSize() - this->getSize()) * 10;
+        return actualChance > rand() % 100;
     }
 
 //trb sa se schimne si isScared

@@ -491,7 +491,7 @@ public:
     //     return isInvincible || isDoublePoints;
     // }
 
-    void addScore( NPCPlayer_mic &fishie) //de adaugat acolo la playturn
+    void addScore( const NPCPlayer_mic &fishie) //de adaugat acolo la playturn
     {
         if (fishie.isscared())
         {
