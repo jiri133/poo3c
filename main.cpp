@@ -20,6 +20,7 @@
 // Clasa Game
 
 
+
 int main()
 {
     std::shared_ptr<Fish> playerFish = std::make_shared<Player>("Sharkey", 1, 0, 10);
