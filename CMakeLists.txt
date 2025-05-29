@@ -51,6 +51,19 @@ include(cmake/CopyHelper.cmake)
 add_executable(${MAIN_EXECUTABLE_NAME}
     main.cpp
     generated/src/Helper.cpp
+        Fish.cpp
+        Fish.h
+        Logger.cpp
+        Logger.h
+        Reward.cpp
+        Reward.h
+        Aquarium.cpp
+        Aquarium.h
+        Objective.cpp
+        Objective.h
+        Game.cpp
+        Game.h
+        ThreatLevel.h
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
