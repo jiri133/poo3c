@@ -139,8 +139,11 @@ public:
                     score += 20;
 
                     // Verificăm dacă e NPCPlayer_mic pentru a aplica scor bonus
-                    if (const auto *mic = dynamic_cast<NPCPlayer_mic*>(npcFish))
+                    if ( auto *mic = dynamic_cast<NPCPlayer_mic*>(npcFish))
                     {
+                        if (const auto* p = dynamic_cast<const Player*>(player.get())) {
+                            mic->attemptEscape(*p);
+                        }
                         addScore(*mic);
                     }
 
