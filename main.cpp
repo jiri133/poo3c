@@ -25,53 +25,59 @@ int main()
     std::shared_ptr<Fish> playerFish = std::make_shared<Player>("Sharkey", 1, 0, 10);
     Objective goal(500);
     Game game(playerFish, goal);
-
-
-    std::cout << "Alege nivelul de dificultate(Threat Level):\n";
-    std::cout << "1. Sunrise (easy)\n";
-    std::cout << "2. Noon (medium)\n";
-    std::cout << "3. Midnight (hard)\n";
-    int levelChoice;
-    std::cin >> levelChoice;
-
-    ThreatLevel level;
-    switch (levelChoice)
+    std::cout<<"vrei sa joci?(da/nu)\n";
+    std::string input;
+    std::cin>>input;
+    if (input == "da")
     {
-        case 1: level = ThreatLevel::Sunrise;
+        std::cout << "Alege nivelul de dificultate(Threat Level):\n";
+        std::cout << "1. Sunrise (easy)\n";
+        std::cout << "2. Noon (medium)\n";
+        std::cout << "3. Midnight (hard)\n";
+        int levelChoice;
+        std::cin >> levelChoice;
+
+        ThreatLevel level;
+        switch (levelChoice)
+        {
+            case 1: level = ThreatLevel::Sunrise;
             break;
-        case 2: level = ThreatLevel::Noon;
+            case 2: level = ThreatLevel::Noon;
             break;
-        case 3: level = ThreatLevel::Midnight;
+            case 3: level = ThreatLevel::Midnight;
             break;
-        default: level = ThreatLevel::Sunrise;
+            default: level = ThreatLevel::Sunrise;
             break;
-    }
+        }
 
-    game.setThreatLevel(level);
+        game.setThreatLevel(level);
 
-    std::thread rewardThread(&Game::rewardSpawnerThread, &game);
+        std::thread rewardThread(&Game::rewardSpawnerThread, &game);
 
-    game.spawnFish(5, playerFish, level);
-    game.displayState();
+        game.spawnFish(5, playerFish, level);
+        game.displayState();
 
-    while (!game.isObjectiveMet() && game.isRunning())
-    {
-        game.ChooseAction();
-        game.continuespawnfish(level, *playerFish); //ca sa am constant pestisori mici in acvariu
+        while (!game.isObjectiveMet() && game.isRunning())
+        {
+            game.ChooseAction();
+            game.continuespawnfish(level, *playerFish); //ca sa am constant pestisori mici in acvariu
+        }
+        game.stop(); // o metodă care setează running = false
+        if (rewardThread.joinable())
+        {
+            rewardThread.join();
+        }
+        if (game.isObjectiveMet())
+        {
+            std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
+        } else
+        {
+            std::cout << "Jocul s-a terminat!" << std::endl;
+        }
+        return 0;
     }
-    game.stop(); // o metodă care setează running = false
-    if (rewardThread.joinable())
-    {
-        rewardThread.join();
-    }
-    if (game.isObjectiveMet())
-    {
-        std::cout << "Felicitari! Ai atins scopul jocului!" << std::endl;
-    } else
-    {
-        std::cout << "Jocul s-a terminat!" << std::endl;
-    }
-    return 0;
+    else
+        return 0;
 
     ///trb sa elimin pestele mancat --check .
     /////constant trebuie sa am un nr minim de pesti micuti pe care sa-i manance ca sa poata sa manance pesti mai mari
