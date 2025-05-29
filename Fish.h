@@ -157,11 +157,11 @@ public:
         this->Fish::grow();
     }
 
-    virtual bool attemptEscape(const Player &player)
-    {
-        ActualChance = escapeChance - (player.getSize() - this->getSize()) * 10;
-        return ActualChance > rand() % 100;
-    }
+    // virtual bool attemptEscape(const Player &player)
+    // {
+    //     ActualChance = escapeChance - (player.getSize() - this->getSize()) * 10;
+    //     return ActualChance > rand() % 100;
+    // }
 
     // void evolve();
 
@@ -181,11 +181,11 @@ private:
 public:
     using NPCFish::NPCFish;
 
-    bool attemptEscape(const Player &player) override
-    {
-        actualChance = EscapeChance - (player.getSize() - this->getSize()) * 10;
-        return actualChance > rand() % 100;
-    }
+    // bool attemptEscape(const Player &player) override
+    // {
+    //     actualChance = EscapeChance - (player.getSize() - this->getSize()) * 10;
+    //     return actualChance > rand() % 100;
+    // }
 
 //trb sa se schimne si isScared
     int getBonusPoints() const  {
@@ -198,10 +198,10 @@ class NPCPlayer_mare : public NPCFish
 {
     public:
     using NPCFish::NPCFish;
-    bool attemptEscape(const Player &player) override
-    {
-        return player.getSize() > this->size + 3 && (rand() % 100) < 20;
-    }
+    // bool attemptEscape(const Player &player) override
+    // {
+    //     return player.getSize() > this->size + 3 && (rand() % 100) < 20;
+    // }
 
 
   int  triggerChallange(Player &player, int &score)
