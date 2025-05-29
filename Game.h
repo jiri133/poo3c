@@ -139,7 +139,7 @@ public:
                     score += 20;
 
                     // Verificăm dacă e NPCPlayer_mic pentru a aplica scor bonus
-                    if (auto *mic = dynamic_cast<NPCPlayer_mic*>(npcFish))
+                    if (const auto *mic = dynamic_cast<NPCPlayer_mic*>(npcFish))
                     {
                         addScore(*mic);
                     }
@@ -151,7 +151,7 @@ public:
                 {
 
                     // Verificăm dacă e NPCPlayer_mare și declanșăm provocarea
-                    if (auto *mare = dynamic_cast<NPCPlayer_mare*>(npcFish))
+                    if (const auto *mare = dynamic_cast<NPCPlayer_mare*>(npcFish))
                     {
                         int scorInitial = score;
                         if (mare->triggerChallange(*dynamic_cast<Player*>(player.get()), score))
