@@ -17,7 +17,7 @@ class exceptie: public std::runtime_error
 {
     public:
     using std::runtime_error::runtime_error;
-    explicit exceptie(const std::string msg): std::runtime_error(msg)
+    explicit exceptie(const std::string& msg): std::runtime_error(msg)
     {
 
     }
