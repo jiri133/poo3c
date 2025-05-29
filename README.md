@@ -16,7 +16,7 @@ Aceasta este o reinterpretare a clasicului joc *Fish Food Frenzy*, scrisă în C
 
 ### 🚧 În curs de dezvoltare:
 
-* Comportamente avansate pentru pești mari (ex: te atacă dacă te apropii).
+* Comportamente avansate pentru pești mari .
 * Timer pentru recompense.
 * Mai multe tipuri de evoluție și abilități speciale.
 
