@@ -1,5 +1,3 @@
-
-
 #ifndef GAME_H
 #define GAME_H
 #pragma once
@@ -12,6 +10,7 @@
 #include "Logger.h"
 #include <random>
 #include <cstdlib>
+#include <stdexcept>
 
 
 class Game
@@ -77,7 +76,7 @@ public:
         while (i <= num)
         {
             auto newFish = std::make_shared<NPCFish>("Fish" + std::to_string(i), 0, 0);
-            aquarium.addFish(newFish); // ✅
+            aquarium.addFish(newFish);
 
             i++;
         }
@@ -101,86 +100,109 @@ public:
             int randomSize = distrib(gen);
             int randomSpeed = randomSize;
 
-            auto newFish = std::make_shared<NPCFish>("Fish" + std::to_string(i), randomSize, randomSpeed);
-            aquarium.addFish(newFish);
+            // auto newFish = std::make_shared<NPCFish>("Fish" + std::to_string(i), randomSize, randomSpeed);
+            if (randomSize < playerFish->getSize())
+            {
+                auto newFish = std::make_shared<NPCPlayer_mic>("Fish" + std::to_string(i), randomSize, randomSpeed);
+                aquarium.addFish(newFish);
+
+            } else if (randomSize > playerFish->getSize())
+            {
+                auto newFish = std::make_shared<NPCPlayer_mare>("Fish" + std::to_string(i), randomSize, randomSpeed);
+                aquarium.addFish(newFish);
+
+            } else
+            {
+                auto newFish = std::make_shared<NPCFish>("Fish" + std::to_string(i), randomSize, randomSpeed);
+                aquarium.addFish(newFish);
+
+            }
         }
     }
 
-    void playTurn(const Fish &targetFish)
+    void playTurn(Fish &targetFish)
     {
-        if (activerewards() == false)
+        // Încearcă să cnvrtsc dinamic la NPCFish
+        try
         {
-            if (player->canEat(targetFish))
+            auto *npcFish = dynamic_cast<NPCFish*>(&targetFish);
+            if (!npcFish)
             {
-                if (targetFish.getSize() < player->getSize())
+                std::cout << "Targetul nu este un NPCFish valid!" << std::endl;
+                return;
+            }
+
+            if (!isInvincible)
+            {
+                if (npcFish->getSize() <= player->getSize())
                 {
                     score += 20;
-                } else
-                {
-                    score += 50;
+
+                    // Verificăm dacă e NPCPlayer_mic pentru a aplica scor bonus
+                    if (auto *mic = dynamic_cast<NPCPlayer_mic*>(npcFish))
+                    {
+                        addScore(*mic);
+                    }
+
+                    if (isDoublePoints)
+                        score += 20;
                 }
+                else
+                {
+
+                    // Verificăm dacă e NPCPlayer_mare și declanșăm provocarea
+                    if (auto *mare = dynamic_cast<NPCPlayer_mare*>(npcFish))
+                    {
+                        int scorInitial = score;
+                        if (mare->triggerChallange(*dynamic_cast<Player*>(player.get()), score))
+                        {
+                            if (isDoublePoints)
+                                score += (score - scorInitial); // bonus dublu
+                        }
+
+                    }
+                }
+
                 if (score % 100 == 0)
                     player->grow();
 
-                // player->evolve();
 
-                Logger::logEvent(
-                    player->getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
-            } else
-            {
-                Logger::logEvent(player->getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
-                stop(); // o metodă care setează running = false
-                return;
+                Logger::logEvent(player->getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
             }
-        } else
-        {
-            if (isInvincible)
+            else
             {
                 score += 50;
                 if (score % 100 == 0)
                     player->grow();
 
-                // playerevolve();
-
-                Logger::logEvent(
-                    player->getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
-            }
-            if (isDoublePoints)
-            {
-                if (player->canEat(targetFish))
-                {
-                    if (targetFish.getSize() < player->getSize())
-                    {
-                        score += 40;
-                    } else
-                    {
-                        score += 100;
-                    }
-                    if (score % 100 == 0)
-                        player->grow();
-
-                    // player.evolve();
-
-                    Logger::logEvent("DOUBLEPOINTS! AI PRIMIT DUBLU DE PUNCTE PENTRU ACEST PESTISOR!");
-                    Logger::logEvent(
-                        player->getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(
-                            score));
-                } else
-                {
-                    Logger::logEvent(
-                        player->getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
-                    stop(); // o metodă care setează running = false
-                    return;
-                }
+                Logger::logEvent(player->getName() + " a mancat " + targetFish.getName() + "! Scor: " + std::to_string(score));
             }
         }
+        catch (exceptie_mortala &err)
+        {
+            if (isDoublePoints)
+                Logger::logEvent("DOUBLEPOINTS! AI PRIMIT DUBLU DE PUNCTE PENTRU ACEST PESTISOR!");
+
+            if (player->getSize() < 0 || player->getSpeed() < 0)
+            {
+                Logger::logEvent(player->getName() + " a fost mancat de " + targetFish.getName() + "! GAME OVER!");
+                stop();
+                return;
+            }
+
+
+        }
+        catch (exceptie &err){
+            std::cout<<err.what()<<std::endl;
+        }
     }
+
 
     void continuespawnfish(const ThreatLevel &level, const Fish &playerFish)
     {
         static std::random_device rd;
         static std::mt19937 gen(rd());
-        std::uniform_int_distribution<> distrib(0, playerFish.getSize() - 1);
+        std::uniform_int_distribution<> distrib(playerFish.getSize() + 1, 6);
         int num = 0;
 
         switch (level)
@@ -200,9 +222,22 @@ public:
         for (int i = 0; i < num; ++i)
         {
             int randomsize = distrib(gen);
-            auto newFish = std::make_shared<NPCFish>("Fish" + std::to_string(distrib(gen) % 3 + distrib(gen)),
-                                                     randomsize, randomsize + 1);
-            aquarium.addFish(newFish);
+            if (randomsize < playerFish.getSize())
+            {
+                auto newFish = std::make_shared<NPCPlayer_mic>("Fish" + std::to_string(i), randomsize,0);
+                aquarium.addFish(newFish);
+
+            } else if (randomsize > playerFish.getSize())
+            {
+                auto newFish = std::make_shared<NPCPlayer_mare>("Fish" + std::to_string(i), randomsize,0);
+                aquarium.addFish(newFish);
+
+            } else
+            {
+                auto newFish = std::make_shared<NPCFish>("Fish" + std::to_string(i), randomsize,0);
+                aquarium.addFish(newFish);
+
+            }
         }
     }
 
@@ -266,19 +301,18 @@ public:
 
         if (idx >= 0 && idx < static_cast<int>(fishlist.size()))
         {
-            if (player->canEat(*fishlist.at(idx)))
-            {
+            // if (player->canEat(*fishlist.at(idx)))
+            // {
                 playTurn(*fishlist.at(idx));
                 aquarium.removeFish(idx);
-            } else
-            {
-                playTurn(*fishlist.at(idx));
+            // } else
+            // {
+                // playTurn(*fishlist.at(idx));
                 if (isInvincible == true)
                 {
-                    aquarium.removeFish(idx);
                     isInvincible = false;
                 }
-            }
+
         } else
         {
             std::cout << "Index invalid!" << std::endl;
@@ -452,17 +486,23 @@ public:
 
     bool isRunning() const { return running; }
 
-    bool activerewards() const
+    // bool activerewards() const
+    // {
+    //     return isInvincible || isDoublePoints;
+    // }
+
+    void addScore( NPCPlayer_mic &fishie) //de adaugat acolo la playturn
     {
-        return isInvincible || isDoublePoints;
+        if (fishie.isscared())
+        {
+            (*this).score += fishie.getBonusPoints();
+        }
+        if (score % 100 == 0)
+            player->grow();
+        Logger::logEvent("BONUS Score added!");
     }
+
 };
-
-
-
-
-
-
 
 
 #endif //GAME_H

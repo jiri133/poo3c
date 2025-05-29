@@ -36,14 +36,12 @@ main.cpp</font>
 <span class="s0">#include </span><span class="s2">&quot;Game.h&quot;</span>
 
 
-
 <span class="s3">// Clasa Game</span>
-
 
 
 <span class="s4">int </span><span class="s1">main</span><span class="s5">()</span>
 <span class="s5">{</span>
-    <span class="s1">Fish </span><span class="s5">*</span><span class="s1">playerFish</span><span class="s5">= </span><span class="s4">new </span><span class="s1">Player</span><span class="s5">(</span><span class="s2">&quot;Sharkey&quot;</span><span class="s5">, </span><span class="s6">1</span><span class="s5">, </span><span class="s6">0</span><span class="s5">, </span><span class="s6">10</span><span class="s5">);</span>
+    <span class="s1">std::shared_ptr</span><span class="s5">&lt;</span><span class="s1">Fish</span><span class="s5">&gt; </span><span class="s1">playerFish </span><span class="s5">= </span><span class="s1">std::make_shared</span><span class="s5">&lt;</span><span class="s1">Player</span><span class="s5">&gt;(</span><span class="s2">&quot;Sharkey&quot;</span><span class="s5">, </span><span class="s6">1</span><span class="s5">, </span><span class="s6">0</span><span class="s5">, </span><span class="s6">10</span><span class="s5">);</span>
     <span class="s1">Objective goal</span><span class="s5">(</span><span class="s6">500</span><span class="s5">);</span>
     <span class="s1">Game game</span><span class="s5">(</span><span class="s1">playerFish</span><span class="s5">, </span><span class="s1">goal</span><span class="s5">);</span>
 
@@ -72,7 +70,7 @@ main.cpp</font>
 
     <span class="s1">std::thread rewardThread</span><span class="s5">(&amp;</span><span class="s1">Game::rewardSpawnerThread</span><span class="s5">, &amp;</span><span class="s1">game</span><span class="s5">);</span>
 
-    <span class="s1">game</span><span class="s5">.</span><span class="s1">spawnFish</span><span class="s5">(</span><span class="s6">5</span><span class="s5">, *</span><span class="s1">playerFish</span><span class="s5">, </span><span class="s1">level</span><span class="s5">);</span>
+    <span class="s1">game</span><span class="s5">.</span><span class="s1">spawnFish</span><span class="s5">(</span><span class="s6">5</span><span class="s5">, </span><span class="s1">playerFish</span><span class="s5">, </span><span class="s1">level</span><span class="s5">);</span>
     <span class="s1">game</span><span class="s5">.</span><span class="s1">displayState</span><span class="s5">();</span>
 
     <span class="s4">while </span><span class="s5">(!</span><span class="s1">game</span><span class="s5">.</span><span class="s1">isObjectiveMet</span><span class="s5">() &amp;&amp; </span><span class="s1">game</span><span class="s5">.</span><span class="s1">isRunning</span><span class="s5">())</span>

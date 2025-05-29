@@ -14,6 +14,7 @@
 #include "Aquarium.h"
 #include "Objective.h"
 #include "Game.h"
+#include<stdexcept>
 
 
 // Clasa Game
